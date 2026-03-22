@@ -1,0 +1,138 @@
+"use client"
+
+import Link from "next/link"
+import { ExternalLink, Star } from "lucide-react"
+import type { Market, Signal } from "@/lib/types"
+import { AlphaBar } from "./alpha-bar"
+import { SignalBadge } from "./signal-badge"
+import { formatProbability, formatEV, relativeTime } from "@/lib/format"
+import { cn } from "@/lib/utils"
+
+interface MarketCardProps {
+  market: Market
+  signal?: Signal
+  loading?: boolean
+  watchlisted?: boolean
+}
+
+export function MarketCard({ market, signal, loading, watchlisted }: MarketCardProps) {
+  if (loading) {
+    return (
+      <div className="rounded-sm border border-darwin-border bg-darwin-card p-4 space-y-3 animate-pulse">
+        <div className="h-4 w-3/4 rounded-sm bg-darwin-border" />
+        <div className="h-3 w-1/4 rounded-sm bg-darwin-border" />
+        <div className="space-y-2 pt-2">
+          <div className="h-3 w-1/2 rounded-sm bg-darwin-border" />
+          <div className="h-3 w-1/2 rounded-sm bg-darwin-border" />
+          <div className="h-2 w-full rounded-sm bg-darwin-border" />
+        </div>
+        <div className="h-3 w-1/3 rounded-sm bg-darwin-border" />
+      </div>
+    )
+  }
+
+  const hasSignal = !!signal
+  const displayEv = signal?.evNet ?? signal?.ev ?? 0
+  const isBullish = signal && displayEv > 0
+
+  return (
+    <Link href={`/compare?add=${market.id}`}>
+      <div
+        className={cn(
+          "rounded-sm border border-darwin-border bg-darwin-card p-4 space-y-3",
+          "transition-colors duration-150 hover:bg-darwin-hover cursor-pointer",
+          hasSignal && "border-t-2",
+          hasSignal && isBullish && "border-t-darwin-green",
+          hasSignal && !isBullish && "border-t-darwin-red",
+          !hasSignal && "opacity-60"
+        )}
+      >
+        <div>
+          <div className="flex items-start justify-between gap-2">
+            <h3 className="text-sm font-medium text-darwin-text line-clamp-2 leading-snug">
+              {market.question}
+            </h3>
+            {watchlisted && (
+              <Star className="h-3.5 w-3.5 shrink-0 fill-yellow-500 text-yellow-500 mt-0.5" />
+            )}
+          </div>
+          <a
+            href={market.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="label-caps mt-1 inline-flex items-center gap-1 text-darwin-text-muted hover:text-darwin-text transition-colors"
+          >
+            POLYMARKET
+            <ExternalLink className="h-2.5 w-2.5" />
+          </a>
+        </div>
+
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-darwin-text-secondary">Market</span>
+            <span className="font-data text-sm text-darwin-text">
+              {formatProbability(market.probability)}
+            </span>
+          </div>
+
+          {hasSignal && (
+            <>
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-darwin-text-secondary">Polyverse</span>
+                <span className="font-data text-sm text-darwin-text">
+                  {formatProbability(signal.darwinEstimate)}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-darwin-text-secondary">
+                  EV{signal.evNet != null ? " (net)" : ""}
+                </span>
+                <span
+                  className={cn(
+                    "font-data text-sm font-medium",
+                    isBullish ? "text-darwin-green" : "text-darwin-red"
+                  )}
+                >
+                  {formatEV(displayEv)}
+                </span>
+              </div>
+            </>
+          )}
+        </div>
+
+        {hasSignal ? (
+          <AlphaBar
+            darwinEstimate={signal.darwinEstimate}
+            marketPrice={signal.marketPrice}
+            size="sm"
+          />
+        ) : (
+          <p className="text-xs text-darwin-text-muted">No signal</p>
+        )}
+
+        {hasSignal && signal.reasoning && (
+          <p className="text-[11px] leading-relaxed text-darwin-text-secondary line-clamp-3">
+            {signal.reasoning}
+          </p>
+        )}
+
+        {hasSignal && (
+          <div className="flex items-center justify-between pt-1">
+            <div className="flex items-center gap-1.5">
+              <SignalBadge confidence={signal.confidence} />
+              {signal.tradeable && (
+                <span className="inline-flex items-center justify-center rounded-sm bg-darwin-green/15 px-1 py-0.5 text-[9px] font-bold text-darwin-green leading-none">
+                  T
+                </span>
+              )}
+            </div>
+            <span className="text-[11px] text-darwin-text-muted">
+              {relativeTime(signal.createdAt)}
+            </span>
+          </div>
+        )}
+      </div>
+    </Link>
+  )
+}
