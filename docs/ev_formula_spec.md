@@ -1,6 +1,6 @@
-# EV Formula Spec (Math-First)
+﻿# EV Formula Spec (Math-First)
 
-This document defines the final Expected Value formulation for Darwin Capital using a quantitative, reliability-focused approach suitable for professional trading workflows.
+This document defines the final Expected Value formulation for POLY-ARB using a quantitative, reliability-focused approach suitable for professional trading workflows.
 
 ## 1) Net Expected Value
 

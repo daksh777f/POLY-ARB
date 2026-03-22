@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Valyu Research API wrapper.
  *
  * Endpoint: POST /v1/deepsearch
@@ -12,7 +12,7 @@ import { ok, err } from '../lib/result';
 import type { Result, NewsResult } from '../lib/types';
 import { config } from '../lib/config';
 
-// ─── Raw API types ────────────────────────────────────────────────────────────
+// â”€â”€â”€ Raw API types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 interface ValyuSearchRequest {
   query: string;
@@ -38,7 +38,7 @@ interface ValyuSearchResponse {
   results?: ValyuRawResult[];
 }
 
-// ─── Backoff helper ───────────────────────────────────────────────────────────
+// â”€â”€â”€ Backoff helper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const BACKOFF_DELAYS_MS = [0, 1000, 2000, 4000];
 
@@ -71,7 +71,7 @@ async function fetchWithBackoff(
   throw lastError;
 }
 
-// ─── Normalization ────────────────────────────────────────────────────────────
+// â”€â”€â”€ Normalization â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function normalizeResult(raw: ValyuRawResult): NewsResult {
   return {
@@ -83,7 +83,7 @@ function normalizeResult(raw: ValyuRawResult): NewsResult {
   };
 }
 
-// ─── Public API ───────────────────────────────────────────────────────────────
+// â”€â”€â”€ Public API â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * Search for recent news relevant to a prediction market question.
@@ -112,7 +112,7 @@ export async function searchNews(
       headers: {
         'Content-Type': 'application/json',
         'x-api-key': config.valyuApiKey,
-        'User-Agent': 'darwin-capital/1.0',
+        'User-Agent': 'poly-arb/1.0',
       },
       body: JSON.stringify(body),
     });

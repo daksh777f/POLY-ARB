@@ -1,5 +1,5 @@
-/**
- * test-agent.ts — Run the LangGraph agent on mock data with a real LLM call.
+﻿/**
+ * test-agent.ts â€” Run the LangGraph agent on mock data with a real LLM call.
  *
  * Usage:
  *   USE_MOCK_DATA=true npx tsx scripts/test-agent.ts
@@ -67,7 +67,7 @@ async function testSingleMarket(market: Market) {
 }
 
 async function main() {
-  console.log('Darwin Capital — Agent Test');
+  console.log('POLY-ARB â€” Agent Test');
   console.log(`USE_MOCK_DATA: ${process.env.USE_MOCK_DATA}`);
   console.log(`GOOGLE_CLOUD_PROJECT: ${process.env.GOOGLE_CLOUD_PROJECT}`);
   console.log(`VERTEX_REGION: ${process.env.VERTEX_REGION}`);

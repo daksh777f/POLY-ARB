@@ -1,4 +1,4 @@
-# Darwin Capital — UI/UX Specification
+﻿# POLY-ARB â€” UI/UX Specification
 
 > Design spec for the hackathon frontend. Multi-page TradingView-grade terminal. True black theme, resizable panels, chart type toggles, overlay system.
 
@@ -6,11 +6,11 @@
 
 ## Design Principles
 
-1. **Dark theme** — financial terminal aesthetic, easy on the eyes during long sessions
-2. **Information density** — show as much relevant data as possible without clutter
-3. **Color = signal** — green = bullish (underpriced), red = bearish (overpriced)
-4. **Desktop-first** — responsive is P2, optimize for 1200px+ screens
-5. **Polling, not push** — React Query polls API routes on interval, no WebSocket complexity
+1. **Dark theme** â€” financial terminal aesthetic, easy on the eyes during long sessions
+2. **Information density** â€” show as much relevant data as possible without clutter
+3. **Color = signal** â€” green = bullish (underpriced), red = bearish (overpriced)
+4. **Desktop-first** â€” responsive is P2, optimize for 1200px+ screens
+5. **Polling, not push** â€” React Query polls API routes on interval, no WebSocket complexity
 
 ---
 
@@ -48,7 +48,7 @@
 
 ### Border Radius
 
-- Cards: `0` (sharp rectangles — TradingView style)
+- Cards: `0` (sharp rectangles â€” TradingView style)
 - Buttons: `0`
 - Badges: `4px`
 - Alpha bar: `2px`
@@ -57,7 +57,7 @@
 
 | Element | Color | Notes |
 |---------|-------|-------|
-| Default market line | `#FFFFFF` | White — overlays use colors |
+| Default market line | `#FFFFFF` | White â€” overlays use colors |
 | Darwin estimate | `#00D47E` | Green dashed |
 | Fair value line | `#FFAA00` | Yellow dashed |
 | Candlestick up | `#00D47E` | Green |
@@ -78,13 +78,13 @@ The signature visual element. Shows the divergence between Darwin's estimate and
 ```
 divergence = darwinEstimate - marketPrice
 
-if divergence > 0  → green bar (bullish, market underpriced)
-if divergence < 0  → red bar (bearish, market overpriced)
-if |divergence| < 0.02 → hidden (no meaningful signal)
+if divergence > 0  â†’ green bar (bullish, market underpriced)
+if divergence < 0  â†’ red bar (bearish, market overpriced)
+if |divergence| < 0.02 â†’ hidden (no meaningful signal)
 
-barWidth = min(|divergence| / 0.20, 1.0) × 100%
-  → 20% divergence = full bar
-  → 5% divergence = 25% bar
+barWidth = min(|divergence| / 0.20, 1.0) Ã— 100%
+  â†’ 20% divergence = full bar
+  â†’ 5% divergence = 25% bar
 ```
 
 ### Interface
@@ -105,23 +105,23 @@ Bullish (darwinEstimate > marketPrice):
 
   Market: 0.45  Darwin: 0.62  EV: +0.17
 
-  ┌──────────────────────────────────────────────────┐
-  │  ████████████████████████████████████░░░░░░░░░░░ │  85% width, green
-  │                                     +17.0%       │
-  └──────────────────────────────────────────────────┘
+  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+  â”‚  â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–‘â–‘â–‘â–‘â–‘â–‘â–‘â–‘â–‘â–‘â–‘ â”‚  85% width, green
+  â”‚                                     +17.0%       â”‚
+  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 
 Bearish (darwinEstimate < marketPrice):
 
   Market: 0.72  Darwin: 0.55  EV: -0.17
 
-  ┌──────────────────────────────────────────────────┐
-  │  ████████████████████████████████████░░░░░░░░░░░ │  85% width, red
-  │                                     -17.0%       │
-  └──────────────────────────────────────────────────┘
+  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+  â”‚  â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–‘â–‘â–‘â–‘â–‘â–‘â–‘â–‘â–‘â–‘â–‘ â”‚  85% width, red
+  â”‚                                     -17.0%       â”‚
+  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 
 Neutral (|divergence| < 0.02):
 
-  (hidden — no bar rendered)
+  (hidden â€” no bar rendered)
 ```
 
 ### States
@@ -140,52 +140,52 @@ The main dashboard. Shows all markets with active signals.
 ### Wireframe
 
 ```
-┌─────────────────────────────────────────────────────────────────────┐
-│  DARWIN CAPITAL                              ● Scanning (2m ago)   │
-├─────────────────────────────────────────────────────────────────────┤
-│  Active Signals: 12    Markets Scanned: 847    High-EV: 3          │
-├─────────────────────────────────────────────────────────────────────┤
-│                                                                     │
-│  ┌──────────────────────┐  ┌──────────────────────┐  ┌────────────┐│
-│  │ Will X win the       │  │ Fed rate cut in      │  │ France PM  ││
-│  │ election?            │  │ March?               │  │ resign?    ││
-│  │                      │  │                      │  │            ││
-│  │ POLYMARKET           │  │ POLYMARKET           │  │ POLYMARKET ││
-│  │                      │  │                      │  │            ││
-│  │ Market  0.45         │  │ Market  0.72         │  │ Market 0.31││
-│  │ Darwin  0.62         │  │ Darwin  0.55         │  │ Darwin 0.48││
-│  │ EV     +0.17         │  │ EV     -0.17         │  │ EV   +0.17 ││
-│  │                      │  │                      │  │            ││
-│  │ ████████████ +17.0%  │  │ ████████████ -17.0%  │  │ ████ +17%  ││
-│  │ (green)              │  │ (red)                │  │ (green)    ││
-│  │                      │  │                      │  │            ││
-│  │ ◉ High   2 min ago   │  │ ◉ Medium  5 min ago  │  │ ◉ High     ││
-│  └──────────────────────┘  └──────────────────────┘  └────────────┘│
-│                                                                     │
-│  ┌──────────────────────┐  ┌──────────────────────┐  ┌────────────┐│
-│  │ ...                  │  │ ...                  │  │ ...        ││
-│  └──────────────────────┘  └──────────────────────┘  └────────────┘│
-│                                                                     │
-└─────────────────────────────────────────────────────────────────────┘
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚  POLY-ARB                              â— Scanning (2m ago)   â”‚
+â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
+â”‚  Active Signals: 12    Markets Scanned: 847    High-EV: 3          â”‚
+â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
+â”‚                                                                     â”‚
+â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”â”‚
+â”‚  â”‚ Will X win the       â”‚  â”‚ Fed rate cut in      â”‚  â”‚ France PM  â”‚â”‚
+â”‚  â”‚ election?            â”‚  â”‚ March?               â”‚  â”‚ resign?    â”‚â”‚
+â”‚  â”‚                      â”‚  â”‚                      â”‚  â”‚            â”‚â”‚
+â”‚  â”‚ POLYMARKET           â”‚  â”‚ POLYMARKET           â”‚  â”‚ POLYMARKET â”‚â”‚
+â”‚  â”‚                      â”‚  â”‚                      â”‚  â”‚            â”‚â”‚
+â”‚  â”‚ Market  0.45         â”‚  â”‚ Market  0.72         â”‚  â”‚ Market 0.31â”‚â”‚
+â”‚  â”‚ Darwin  0.62         â”‚  â”‚ Darwin  0.55         â”‚  â”‚ Darwin 0.48â”‚â”‚
+â”‚  â”‚ EV     +0.17         â”‚  â”‚ EV     -0.17         â”‚  â”‚ EV   +0.17 â”‚â”‚
+â”‚  â”‚                      â”‚  â”‚                      â”‚  â”‚            â”‚â”‚
+â”‚  â”‚ â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆ +17.0%  â”‚  â”‚ â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆ -17.0%  â”‚  â”‚ â–ˆâ–ˆâ–ˆâ–ˆ +17%  â”‚â”‚
+â”‚  â”‚ (green)              â”‚  â”‚ (red)                â”‚  â”‚ (green)    â”‚â”‚
+â”‚  â”‚                      â”‚  â”‚                      â”‚  â”‚            â”‚â”‚
+â”‚  â”‚ â—‰ High   2 min ago   â”‚  â”‚ â—‰ Medium  5 min ago  â”‚  â”‚ â—‰ High     â”‚â”‚
+â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜â”‚
+â”‚                                                                     â”‚
+â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”â”‚
+â”‚  â”‚ ...                  â”‚  â”‚ ...                  â”‚  â”‚ ...        â”‚â”‚
+â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜â”‚
+â”‚                                                                     â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 
 ### Component Hierarchy
 
 ```
 MarketGrid (page.tsx)
-├── Header
-│   └── ScanStatus (last scan time, active/idle indicator)
-├── StatsBar
-│   ├── StatItem (active signals count)
-│   ├── StatItem (markets scanned)
-│   └── StatItem (high-EV count)
-└── MarketCardGrid
-    └── MarketCard (repeated)
-        ├── CardHeader (question, platform badge)
-        ├── CardBody
-        │   ├── PriceRow (market price, darwin estimate, EV)
-        │   └── AlphaBar
-        └── CardFooter (confidence badge, timestamp)
+â”œâ”€â”€ Header
+â”‚   â””â”€â”€ ScanStatus (last scan time, active/idle indicator)
+â”œâ”€â”€ StatsBar
+â”‚   â”œâ”€â”€ StatItem (active signals count)
+â”‚   â”œâ”€â”€ StatItem (markets scanned)
+â”‚   â””â”€â”€ StatItem (high-EV count)
+â””â”€â”€ MarketCardGrid
+    â””â”€â”€ MarketCard (repeated)
+        â”œâ”€â”€ CardHeader (question, platform badge)
+        â”œâ”€â”€ CardBody
+        â”‚   â”œâ”€â”€ PriceRow (market price, darwin estimate, EV)
+        â”‚   â””â”€â”€ AlphaBar
+        â””â”€â”€ CardFooter (confidence badge, timestamp)
 ```
 
 ### Card Content
@@ -222,69 +222,69 @@ Deep dive into a single market with analysis feed.
 ### Wireframe
 
 ```
-┌─────────────────────────────────────────────────────────────────────┐
-│  ← Back to Markets                                                  │
-├─────────────────────────────────────────────────────────────────────┤
-│  Will X win the 2026 election?                                      │
-│  POLYMARKET  ·  Ends Mar 15, 2026  ·  Vol $2.4M  ·  Liq $890K     │
-├────────────────────────────────┬────────────────────────────────────┤
-│                                │                                    │
-│  MARKET PRICE                  │  ANALYSIS FEED                     │
-│  ┌──────────────────────────┐  │                                    │
-│  │                          │  │  ┌────────────────────────────────┐│
-│  │  0.45                    │  │  │ ● Signal Generated       2m   ││
-│  │  Current market price    │  │  │                               ││
-│  │                          │  │  │ Darwin estimates 62%          ││
-│  └──────────────────────────┘  │  │ probability, market shows     ││
-│                                │  │ 45%. EV: +0.17                ││
-│  DARWIN ESTIMATE               │  │                               ││
-│  ┌──────────────────────────┐  │  │ Key factors:                  ││
-│  │                          │  │  │ - Recent poll showing...      ││
-│  │  0.62                    │  │  │ - Endorsement from...         ││
-│  │  +17.0% divergence       │  │  │                               ││
-│  │  ████████████████ green  │  │  │ Confidence: ◉ High            ││
-│  │                          │  │  └────────────────────────────────┘│
-│  └──────────────────────────┘  │                                    │
-│                                │  ┌────────────────────────────────┐│
-│  SIGNAL DETAILS                │  │ ▶ fetchRecentNews        2m   ││
-│  ┌──────────────────────────┐  │  │   query: "X election 2026"    ││
-│  │  Direction: YES          │  │  │   (click to expand)           ││
-│  │  EV: +0.17               │  │  └────────────────────────────────┘│
-│  │  Confidence: High        │  │                                    │
-│  │  News events: 3          │  │  ┌────────────────────────────────┐│
-│  │  Created: 2 min ago      │  │  │ ▶ estimateEventProb      2m   ││
-│  └──────────────────────────┘  │  │   probability: 0.62           ││
-│                                │  │   (click to expand)           ││
-│                                │  └────────────────────────────────┘│
-│                                │                                    │
-├────────────────────────────────┴────────────────────────────────────┤
-│  ┌────────────────────────────────────────────────────────┐ [Analyze]│
-│  │  Ask Darwin about this market...                       │          │
-│  └────────────────────────────────────────────────────────┘          │
-└─────────────────────────────────────────────────────────────────────┘
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚  â† Back to Markets                                                  â”‚
+â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
+â”‚  Will X win the 2026 election?                                      â”‚
+â”‚  POLYMARKET  Â·  Ends Mar 15, 2026  Â·  Vol $2.4M  Â·  Liq $890K     â”‚
+â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
+â”‚                                â”‚                                    â”‚
+â”‚  MARKET PRICE                  â”‚  ANALYSIS FEED                     â”‚
+â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  â”‚                                    â”‚
+â”‚  â”‚                          â”‚  â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”â”‚
+â”‚  â”‚  0.45                    â”‚  â”‚  â”‚ â— Signal Generated       2m   â”‚â”‚
+â”‚  â”‚  Current market price    â”‚  â”‚  â”‚                               â”‚â”‚
+â”‚  â”‚                          â”‚  â”‚  â”‚ Darwin estimates 62%          â”‚â”‚
+â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜  â”‚  â”‚ probability, market shows     â”‚â”‚
+â”‚                                â”‚  â”‚ 45%. EV: +0.17                â”‚â”‚
+â”‚  DARWIN ESTIMATE               â”‚  â”‚                               â”‚â”‚
+â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  â”‚  â”‚ Key factors:                  â”‚â”‚
+â”‚  â”‚                          â”‚  â”‚  â”‚ - Recent poll showing...      â”‚â”‚
+â”‚  â”‚  0.62                    â”‚  â”‚  â”‚ - Endorsement from...         â”‚â”‚
+â”‚  â”‚  +17.0% divergence       â”‚  â”‚  â”‚                               â”‚â”‚
+â”‚  â”‚  â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆ green  â”‚  â”‚  â”‚ Confidence: â—‰ High            â”‚â”‚
+â”‚  â”‚                          â”‚  â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜â”‚
+â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜  â”‚                                    â”‚
+â”‚                                â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”â”‚
+â”‚  SIGNAL DETAILS                â”‚  â”‚ â–¶ fetchRecentNews        2m   â”‚â”‚
+â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  â”‚  â”‚   query: "X election 2026"    â”‚â”‚
+â”‚  â”‚  Direction: YES          â”‚  â”‚  â”‚   (click to expand)           â”‚â”‚
+â”‚  â”‚  EV: +0.17               â”‚  â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜â”‚
+â”‚  â”‚  Confidence: High        â”‚  â”‚                                    â”‚
+â”‚  â”‚  News events: 3          â”‚  â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”â”‚
+â”‚  â”‚  Created: 2 min ago      â”‚  â”‚  â”‚ â–¶ estimateEventProb      2m   â”‚â”‚
+â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜  â”‚  â”‚   probability: 0.62           â”‚â”‚
+â”‚                                â”‚  â”‚   (click to expand)           â”‚â”‚
+â”‚                                â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜â”‚
+â”‚                                â”‚                                    â”‚
+â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
+â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â” [Analyze]â”‚
+â”‚  â”‚  Ask Darwin about this market...                       â”‚          â”‚
+â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜          â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 
 ### Component Hierarchy
 
 ```
 MarketDetail (markets/[id]/page.tsx)
-├── BackButton
-├── MarketHeader
-│   ├── Question (h1)
-│   └── MetaRow (platform badge, end date, volume, liquidity)
-├── DetailLayout (two-column at lg+, single-column below)
-│   ├── LeftPanel
-│   │   ├── PriceDisplay (market price, large)
-│   │   ├── EstimateDisplay (darwin estimate, alpha bar)
-│   │   └── SignalDetails (direction, EV, confidence, news count, timestamp)
-│   └── RightPanel
-│       └── AnalysisFeed
-│           └── FeedEntry (repeated)
-│               ├── SignalEntry (green/red left border)
-│               └── ToolCallEntry (blue left border, collapsible)
-└── QueryInterface
-    ├── TextInput
-    └── AnalyzeButton
+â”œâ”€â”€ BackButton
+â”œâ”€â”€ MarketHeader
+â”‚   â”œâ”€â”€ Question (h1)
+â”‚   â””â”€â”€ MetaRow (platform badge, end date, volume, liquidity)
+â”œâ”€â”€ DetailLayout (two-column at lg+, single-column below)
+â”‚   â”œâ”€â”€ LeftPanel
+â”‚   â”‚   â”œâ”€â”€ PriceDisplay (market price, large)
+â”‚   â”‚   â”œâ”€â”€ EstimateDisplay (darwin estimate, alpha bar)
+â”‚   â”‚   â””â”€â”€ SignalDetails (direction, EV, confidence, news count, timestamp)
+â”‚   â””â”€â”€ RightPanel
+â”‚       â””â”€â”€ AnalysisFeed
+â”‚           â””â”€â”€ FeedEntry (repeated)
+â”‚               â”œâ”€â”€ SignalEntry (green/red left border)
+â”‚               â””â”€â”€ ToolCallEntry (blue left border, collapsible)
+â””â”€â”€ QueryInterface
+    â”œâ”€â”€ TextInput
+    â””â”€â”€ AnalyzeButton
 ```
 
 ### Analysis Feed Entry Types
@@ -314,7 +314,7 @@ Multi-panel TradingView-style layout with resizable panels.
 - **Per-panel settings**: Each panel has its own chart toolbar with local overrides (blue dot indicators). Reset button clears all overrides.
 - **OHLC header**: `O:65.0 H:68.0 L:63.0 C:65.0 +2.0 (+3.1%) Vol:24` per panel.
 - **Chart toolbar**: `[Line][Candle][Area] | [1D][1W][1M][ALL] | [Vol] | [Darwin][FV]`
-- **Crosshair sync**: Toggle in header — when enabled, crosshair moves sync across all panels.
+- **Crosshair sync**: Toggle in header â€” when enabled, crosshair moves sync across all panels.
 - **Drag-and-drop**: Reorder panels via drag. Framer-motion opacity/scale animation during drag. Blue ring drop zone.
 - **Market swap**: Refresh icon opens search modal to change panel's market.
 
@@ -322,15 +322,15 @@ Multi-panel TradingView-style layout with resizable panels.
 
 ```
 ComparePage
-├── Header (DARWIN CAPITAL | Compare | Layout selector | Sync toggle | Add Market)
-├── ResizableGrid (panelCount)
-│   └── ComparePanel (repeated)
-│       ├── PanelHeader (grip, question, probability, signal badge, swap button)
-│       ├── OhlcHeader (O/H/L/C/Vol data)
-│       ├── ChartToolbar (type, timeframe, volume, overlays, reset)
-│       ├── LightweightChart (line/candle/area + volume + overlays)
-│       └── PanelFooter (EV, Darwin, Market stats)
-└── MarketSearchModal
+â”œâ”€â”€ Header (POLY-ARB | Compare | Layout selector | Sync toggle | Add Market)
+â”œâ”€â”€ ResizableGrid (panelCount)
+â”‚   â””â”€â”€ ComparePanel (repeated)
+â”‚       â”œâ”€â”€ PanelHeader (grip, question, probability, signal badge, swap button)
+â”‚       â”œâ”€â”€ OhlcHeader (O/H/L/C/Vol data)
+â”‚       â”œâ”€â”€ ChartToolbar (type, timeframe, volume, overlays, reset)
+â”‚       â”œâ”€â”€ LightweightChart (line/candle/area + volume + overlays)
+â”‚       â””â”€â”€ PanelFooter (EV, Darwin, Market stats)
+â””â”€â”€ MarketSearchModal
 ```
 
 ---
@@ -342,7 +342,7 @@ Polymarket-style filtering on the main grid page.
 ### Filter Components
 
 1. **Search**: Text input with icon, filters by market question or category.
-2. **Sort buttons**: `[Alpha][Volume][Newest][Probability]` — Alpha sorts by |EV| descending.
+2. **Sort buttons**: `[Alpha][Volume][Newest][Probability]` â€” Alpha sorts by |EV| descending.
 3. **Signal filter**: `[All][Has Signal][High EV][Bullish][Bearish]`
 4. **Category pills**: Horizontal scrolling row of category buttons extracted from market data. "All Categories" default.
 5. **Clear filters**: Appears when any filter is active. Single button resets all.
@@ -368,11 +368,11 @@ Series types (created upfront, toggled):
 
 ```
 ChartSettingsProvider (global context)
-  └── usePanelSettings(panelId) (per-panel overrides)
-       ├── Merges global + local overrides
-       ├── isOverridden(key) → blue dot indicator
-       ├── setLocal(key, value) → local override
-       └── resetAll() → clear all overrides
+  â””â”€â”€ usePanelSettings(panelId) (per-panel overrides)
+       â”œâ”€â”€ Merges global + local overrides
+       â”œâ”€â”€ isOverridden(key) â†’ blue dot indicator
+       â”œâ”€â”€ setLocal(key, value) â†’ local override
+       â””â”€â”€ resetAll() â†’ clear all overrides
 ```
 
 ---
@@ -420,7 +420,7 @@ ChartSettingsProvider (global context)
 | ToolCallEntry | Click | Toggle expand/collapse, show full input/output |
 | QueryInterface | Enter / click Analyze | POST to `/api/analyze`, show loading, append result to feed |
 | BackButton | Click | Navigate to `/` (grid) |
-| ConfidenceBadge | — | Static, color-coded (green/yellow/gray) |
+| ConfidenceBadge | â€” | Static, color-coded (green/yellow/gray) |
 
 ---
 

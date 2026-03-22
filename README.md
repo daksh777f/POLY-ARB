@@ -1,4 +1,4 @@
-
+﻿
 ```
      ___   ___  ____  _      __ __ _  _  __     ___   ___  ____  __ ____  ___  __
     | . \ / . \| .__\| |    |  |  | || \| |    | _/  / . \| .__\|  |_ _|/ . \| |
@@ -12,7 +12,9 @@
 
 *Finding markets where news has moved reality but price hasn't caught up*
 
-**HackEurope 2026 -- Darwin Capital**
+**Poly-Arb Project**
+
+**Developers: Daksh Goel & Chirag Aggarwal**
 
 [![Next.js](https://img.shields.io/badge/Next.js_16-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React_19-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
@@ -29,15 +31,6 @@
 
 </div>
 
----
-
-<div align="center">
-  <img src="docs/cover.png" alt="Polyverse Galaxy View — real-time prediction market visualization" width="100%" />
-  <br />
-  <em>The Polyverse galaxy — every star is a live prediction market, clustered by category, colored by alpha signal strength</em>
-</div>
-
----
 
 ## The Thesis
 
@@ -47,7 +40,7 @@ Prediction markets are supposed to be efficient. They're not. When Biden posted 
 
 When Trump was shot at a rally in Butler, PA, the "Trump wins 2024" market didn't move for **23 minutes**. Traders had to see the news, confirm he was alive, then reason about whether an assassination attempt made him *more* likely to win. That interpretation gap is the alpha.
 
-**Darwin Capital** is a system that lives inside that gap. It monitors 50+ RSS feeds and the Valyu deep search API in real time, runs an AI agent pipeline to estimate probability shifts before the market catches up, and flags divergences as tradeable signals -- all committed to Solana as cryptographic proof that the prediction existed before the price moved.
+**Poly-Arb** is a system that lives inside that gap. It monitors 50+ RSS feeds and the Valyu deep search API in real time, runs an AI agent pipeline to estimate probability shifts before the market catches up, and flags divergences as tradeable signals -- all committed to Solana as cryptographic proof that the prediction existed before the price moved.
 
 ---
 
@@ -496,7 +489,7 @@ Polymarket's CLOB API includes a `seconds_delay` field on each market. For sport
 
 ### The $40 Million Proof
 
-The $40 million in documented arbitrage profits between April 2024 and April 2025 proves this isn't theoretical. The inefficiency is real, measurable, and large enough that sophisticated actors are already extracting value from it. Darwin Capital's contribution is making this analysis accessible and transparent, with on-chain proof that predictions are made *before* the price moves -- not after.
+The $40 million in documented arbitrage profits between April 2024 and April 2025 proves this isn't theoretical. The inefficiency is real, measurable, and large enough that sophisticated actors are already extracting value from it. This project's contribution is making this analysis accessible and transparent, with on-chain proof that predictions are made *before* the price moves -- not after.
 
 ---
 
@@ -556,9 +549,9 @@ docs/             # Research, screenshots
 
 <div align="center">
 
-*Research conducted by Darwin Capital AI research agent*
+*Research conducted by Poly-Arb AI research agent*
 *All price data from Polymarket public APIs -- first-party, on-chain, reproducible*
 
-**Built for HackEurope 2026**
+**Built for prediction-market research**
 
 </div>

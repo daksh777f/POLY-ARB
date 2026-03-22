@@ -1,4 +1,4 @@
-#!/usr/bin/env npx tsx
+﻿#!/usr/bin/env npx tsx
 /**
  * Smoke test for external API wrappers.
  * Run: npx tsx scripts/test-apis.ts
@@ -19,7 +19,7 @@ try {
     const val = trimmed.slice(eq + 1).trim()
     if (key && !(key in process.env)) process.env[key] = val
   }
-} catch { /* .env not found — rely on process.env */ }
+} catch { /* .env not found â€” rely on process.env */ }
 
 import { fetchMarkets, fetchMarketById } from '../src/data/polymarket'
 import { searchNews, buildNewsQuery } from '../src/data/valyu'
@@ -34,7 +34,7 @@ function fail(label: string, error: string) {
 }
 
 async function testGammaApi() {
-  console.log('\n── Gamma API ─────────────────────────────────')
+  console.log('\nâ”€â”€ Gamma API â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€')
 
   // fetchMarkets
   const marketsResult = await fetchMarkets({ limit: 5 })
@@ -46,7 +46,7 @@ async function testGammaApi() {
   pass('fetchMarkets', `${markets.length} markets returned`)
 
   if (markets.length === 0) {
-    fail('fetchMarkets', 'returned 0 markets — nothing to test downstream')
+    fail('fetchMarkets', 'returned 0 markets â€” nothing to test downstream')
     return null
   }
 
@@ -66,7 +66,7 @@ async function testGammaApi() {
 }
 
 async function testValyuApi(market: Awaited<ReturnType<typeof testGammaApi>>) {
-  console.log('\n── Valyu API ─────────────────────────────────')
+  console.log('\nâ”€â”€ Valyu API â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€')
 
   const question = market?.question ?? 'Will Trump be impeached in 2026?'
   const query = buildNewsQuery(question)
@@ -90,7 +90,7 @@ async function testValyuApi(market: Awaited<ReturnType<typeof testGammaApi>>) {
 }
 
 async function main() {
-  console.log('Darwin Capital \u2014 API Smoke Test')
+  console.log('POLY-ARB \u2014 API Smoke Test')
   console.log('================================')
 
   const market = await testGammaApi()

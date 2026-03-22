@@ -1,5 +1,5 @@
-/**
- * RSS Watcher — polls 50+ RSS feeds every 30s for breaking news.
+﻿/**
+ * RSS Watcher â€” polls 50+ RSS feeds every 30s for breaking news.
  *
  * Phase 1: Detect headlines (cheap, fast, parallel)
  *   - Fetch all feeds with concurrency limit
@@ -19,7 +19,7 @@ import { getScoutKeywords } from '@/store/scout-config';
 import { config } from '@/lib/config';
 import type { Market, NewsResult } from '@/lib/types';
 
-// ─── Types ───────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export interface RssArticle {
   title: string
@@ -36,7 +36,7 @@ export interface RssMatch {
   keywordOverlap: number
 }
 
-// ─── State ───────────────────────────────────────────────────────────────────
+// â”€â”€â”€ State â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 interface RssWatcherState {
   running: boolean
@@ -54,7 +54,7 @@ const state: RssWatcherState = {
   totalMatches: 0,
 };
 
-// In-memory cache backed by SQLite — survives restarts
+// In-memory cache backed by SQLite â€” survives restarts
 let seenKeys: Set<string> | null = null;
 
 function getSeenKeys(): Set<string> {
@@ -69,18 +69,18 @@ export type RssMatchCallback = (matches: RssMatch[]) => void;
 let onMatchCallback: RssMatchCallback | null = null;
 let activeMarkets: Market[] = [];
 
-// ─── RSS Parser ──────────────────────────────────────────────────────────────
+// â”€â”€â”€ RSS Parser â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const parser = new RssParser({
   timeout: 10_000,
   headers: {
-    'User-Agent': 'darwin-capital/1.0',
+    'User-Agent': 'poly-arb/1.0',
     Accept: 'application/rss+xml, application/xml, text/xml, */*',
   },
   maxRedirects: 3,
 });
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function dedupeKey(url: string, title: string): string {
   // Prefer URL for dedup (unique), fall back to title hash
@@ -96,7 +96,7 @@ function isRecent(pubDate: string | null, maxAgeHours: number): boolean {
   return ageMs < maxAgeHours * 60 * 60 * 1000;
 }
 
-// ─── Keyword Matching (same logic as news-watcher) ───────────────────────────
+// â”€â”€â”€ Keyword Matching (same logic as news-watcher) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const STOP_WORDS = new Set([
   'the', 'a', 'an', 'is', 'are', 'was', 'were', 'be', 'been', 'being',
@@ -171,7 +171,7 @@ function matchArticleToMarkets(
   return matches.slice(0, 10);
 }
 
-// ─── Feed Fetching ───────────────────────────────────────────────────────────
+// â”€â”€â”€ Feed Fetching â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 interface FeedResult {
   ok: boolean
@@ -216,7 +216,7 @@ async function fetchFeed(feed: FeedSource): Promise<FeedResult> {
 
     return { ok: true, articles };
   } catch {
-    // Silently skip broken feeds — some will 403, timeout, etc.
+    // Silently skip broken feeds â€” some will 403, timeout, etc.
     return { ok: false, articles: [] };
   }
 }
@@ -269,7 +269,7 @@ async function pollAllFeeds(): Promise<void> {
   state.totalMatches += allMatches.length;
 
   if (allMatches.length > 0) {
-    // Dedupe matches by market ID — keep highest overlap per market
+    // Dedupe matches by market ID â€” keep highest overlap per market
     const bestByMarket = new Map<string, RssMatch>();
     for (const match of allMatches) {
       const existing = bestByMarket.get(match.market.id);
@@ -280,12 +280,12 @@ async function pollAllFeeds(): Promise<void> {
     const deduped = Array.from(bestByMarket.values());
 
     logActivity('news-watcher', 'info',
-      `RSS: ${allArticles.length} new articles from ${feedsOk} feeds → ${deduped.length} market matches`,
+      `RSS: ${allArticles.length} new articles from ${feedsOk} feeds â†’ ${deduped.length} market matches`,
       {
         articles: allArticles.length,
         feeds: feedsOk,
         matches: deduped.length,
-        topMatch: deduped[0] ? `${deduped[0].article.title.slice(0, 60)} → ${deduped[0].market.question.slice(0, 40)}` : undefined,
+        topMatch: deduped[0] ? `${deduped[0].article.title.slice(0, 60)} â†’ ${deduped[0].market.question.slice(0, 40)}` : undefined,
       });
 
     onMatchCallback?.(deduped);
@@ -295,7 +295,7 @@ async function pollAllFeeds(): Promise<void> {
   }
 }
 
-// ─── Public API ──────────────────────────────────────────────────────────────
+// â”€â”€â”€ Public API â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export function updateRssActiveMarkets(markets: Market[]): void {
   activeMarkets = markets;

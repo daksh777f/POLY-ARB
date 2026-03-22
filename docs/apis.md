@@ -1,4 +1,4 @@
-# Darwin Capital — API Reference
+﻿# POLY-ARB â€” API Reference
 
 > External APIs (Polymarket, Valyu) and internal Next.js API routes.
 > **All shapes verified live on 2026-02-21.** See `docs/samples/` for full raw responses (`gamma.json`, `clob.json`, `valyu.json`).
@@ -7,7 +7,7 @@
 
 ## External APIs
 
-### Polymarket — Gamma API
+### Polymarket â€” Gamma API
 
 **Base URL:** `https://gamma-api.polymarket.com`
 **Auth:** None required
@@ -18,7 +18,7 @@
 | GET | `/markets` | List active markets (plain array, no wrapper) |
 | GET | `/markets/:id` | Single market by Gamma numeric ID |
 
-#### `GET /markets` — Query Params
+#### `GET /markets` â€” Query Params
 
 | Param | Type | Description |
 |-------|------|-------------|
@@ -29,19 +29,19 @@
 
 #### Response Shape
 
-**⚠️ Returns a plain array — no `{ data: [] }` wrapper.**
+**âš ï¸ Returns a plain array â€” no `{ data: [] }` wrapper.**
 
 ```typescript
 // Array item
 interface GammaMarket {
   id: string               // Gamma numeric ID e.g. "517310"
   question: string
-  conditionId: string      // 0x hex — used for CLOB API calls
+  conditionId: string      // 0x hex â€” used for CLOB API calls
   slug: string
   endDate: string          // ISO 8601 e.g. "2025-12-31T12:00:00Z"
-  liquidity: string        // ⚠️ decimal STRING e.g. "20526.93"
-  volume: string           // ⚠️ decimal STRING e.g. "1198758.20"
-  outcomePrices: string    // ⚠️ JSON string of STRING numbers: "[\"0.0295\", \"0.9705\"]"
+  liquidity: string        // âš ï¸ decimal STRING e.g. "20526.93"
+  volume: string           // âš ï¸ decimal STRING e.g. "1198758.20"
+  outcomePrices: string    // âš ï¸ JSON string of STRING numbers: "[\"0.0295\", \"0.9705\"]"
   outcomes: string         // JSON string: "[\"Yes\", \"No\"]"
   clobTokenIds: string     // JSON string of token ID strings: "[\"1016...\", \"4153...\"]"
   category?: string
@@ -67,11 +67,11 @@ const tokenIds = JSON.parse(market.clobTokenIds) as string[]  // ["101676...", "
 
 ---
 
-### Polymarket — CLOB API
+### Polymarket â€” CLOB API
 
 **Base URL:** `https://clob.polymarket.com`
 **Auth:** None required for public market data
-**Rate Limit:** ~100 requests/minute (undocumented — use conservative backoff)
+**Rate Limit:** ~100 requests/minute (undocumented â€” use conservative backoff)
 
 | Method | Path | Description |
 |--------|------|-------------|
@@ -82,7 +82,7 @@ const tokenIds = JSON.parse(market.clobTokenIds) as string[]  // ["101676...", "
 
 #### `GET /markets` Response
 
-**Returns `{ data: [...], next_cursor, limit, count }` — has a wrapper unlike Gamma.**
+**Returns `{ data: [...], next_cursor, limit, count }` â€” has a wrapper unlike Gamma.**
 
 ```typescript
 interface ClobMarketsResponse {
@@ -122,7 +122,7 @@ interface ClobMarket {
 #### `GET /price?token_id=:id&side=BUY` Response
 
 ```typescript
-// ⚠️ price is a STRING, not a number
+// âš ï¸ price is a STRING, not a number
 { price: "0.015" }
 ```
 
@@ -138,7 +138,7 @@ interface ClobOrderBook {
   asset_id: string        // token_id
   timestamp: string       // unix ms as string
   hash: string
-  bids: Array<{ price: string; size: string }>   // ⚠️ both strings
+  bids: Array<{ price: string; size: string }>   // âš ï¸ both strings
   asks: Array<{ price: string; size: string }>
   min_order_size: string
   tick_size: string
@@ -150,11 +150,11 @@ interface ClobOrderBook {
 #### Notes
 - `GET /markets` is paginated; `GET /markets/:condition_id` returns a single object
 - `/price` endpoint uses `side=BUY` for best bid (closest to current market price)
-- All prices in order book are **strings** — `parseFloat()` before use
+- All prices in order book are **strings** â€” `parseFloat()` before use
 
 ---
 
-### Valyu — Research API
+### Valyu â€” Research API
 
 **Base URL:** `https://api.valyu.network/v1`
 **Auth:** `x-api-key` header
@@ -164,7 +164,7 @@ interface ClobOrderBook {
 |--------|------|-------------|
 | POST | `/deepsearch` | Search for recent news and research content |
 
-> **⚠️ Endpoint correction:** The correct path is `/deepsearch`, not `/search` as previously documented.
+> **âš ï¸ Endpoint correction:** The correct path is `/deepsearch`, not `/search` as previously documented.
 
 #### Request Shape
 
@@ -195,7 +195,7 @@ interface ValyuSearchResponse {
   results: Array<{
     title: string
     url: string
-    content: string          // full article text (can be long — truncate for agent context)
+    content: string          // full article text (can be long â€” truncate for agent context)
     source?: string
   }>
   total_deduction_dollars: number   // cost of this query
@@ -206,9 +206,9 @@ interface ValyuSearchResponse {
 
 #### Notes
 - Check `success === true` before using results; error detail is in `error` field
-- `content` can be very long — truncate to ~500 chars when building agent context strings
+- `content` can be very long â€” truncate to ~500 chars when building agent context strings
 - `search_type: 'all'` gives broadest coverage; `'web'` for fresh breaking news
-- `max_num_results: 5` is sufficient for market analysis — avoids excess token usage
+- `max_num_results: 5` is sufficient for market analysis â€” avoids excess token usage
 
 ---
 
@@ -234,7 +234,7 @@ All Polymarket responses are normalized to the shared `Market` type in `src/data
 
 ```typescript
 function gammaToMarket(gamma: GammaMarket): Market {
-  // outcomePrices is a JSON string of STRING numbers — parse twice
+  // outcomePrices is a JSON string of STRING numbers â€” parse twice
   const prices = JSON.parse(gamma.outcomePrices) as string[]
   const tokenIds = JSON.parse(gamma.clobTokenIds) as string[]
 
@@ -285,7 +285,7 @@ interface MarketsResponse {
 }
 ```
 
-**React Query hook:** `useMarkets(category?, limit?)` — poll every `NEXT_PUBLIC_POLL_INTERVAL_MS`
+**React Query hook:** `useMarkets(category?, limit?)` â€” poll every `NEXT_PUBLIC_POLL_INTERVAL_MS`
 
 ---
 
@@ -343,7 +343,7 @@ interface ApiError {
 
 ---
 
-## Merge Notes — API Integration (agents ← vlad branch)
+## Merge Notes â€” API Integration (agents â† vlad branch)
 
 > **Status:** Pending merge. The `vlad` branch has production-ready data wrappers
 > (`src/data/polymarket.ts`, `src/data/valyu.ts`) that are more complete than the
@@ -358,8 +358,8 @@ the agent nodes should be updated to use these instead of the current simpler ve
 
 ```typescript
 // vlad's Market type adds:
-conditionId: string              // CLOB condition_id (0x hex) — for CLOB API calls
-tokenIds: [string, string]      // [YES token_id, NO token_id] — for price/book queries
+conditionId: string              // CLOB condition_id (0x hex) â€” for CLOB API calls
+tokenIds: [string, string]      // [YES token_id, NO token_id] â€” for price/book queries
 ```
 
 These are needed if we want to fetch live CLOB prices or order books during analysis.
@@ -381,7 +381,7 @@ These are needed if we want to fetch live CLOB prices or order books during anal
 | Endpoint | `POST /v1/search` | `POST /v1/deepsearch` |
 | Return type | `Result<NewsResult[]>` | `Result<NewsSearchResult>` (wraps results + query + totalFound) |
 | `NewsResult` | `{ title, content, source, relevanceScore }` | Adds `url: string` |
-| Extra functions | — | `searchWebNews()`, `buildNewsQuery()` |
+| Extra functions | â€” | `searchWebNews()`, `buildNewsQuery()` |
 | Config | `config.valyuApiKey` | `config.valyuApiKey` + `config.valyu.baseUrl` |
 
 **Config structure differs:**
@@ -399,28 +399,28 @@ config.evThreshold
 
 ### Suggested Integration Steps
 
-1. **Use vlad's `src/data/polymarket.ts` as the source of truth** — it has more API
+1. **Use vlad's `src/data/polymarket.ts` as the source of truth** â€” it has more API
    coverage (CLOB price, order book, paginated markets). Drop the agent branch version.
 
-2. **Use vlad's `src/data/valyu.ts` as the source of truth** — it uses the correct
+2. **Use vlad's `src/data/valyu.ts` as the source of truth** â€” it uses the correct
    `/deepsearch` endpoint and has `buildNewsQuery()` which strips prediction-market
    phrasing from queries for better search results.
 
-3. **Update `src/agent/nodes.ts` fetchNewsNode** — adapt to vlad's `searchNews()`
+3. **Update `src/agent/nodes.ts` fetchNewsNode** â€” adapt to vlad's `searchNews()`
    return type (`Result<NewsSearchResult>` instead of `Result<NewsResult[]>`). The
    results are at `result.data.results` instead of `result.data`.
 
-4. **Update `src/lib/types.ts`** — merge vlad's richer types (add `GammaMarket`,
+4. **Update `src/lib/types.ts`** â€” merge vlad's richer types (add `GammaMarket`,
    `ClobMarket`, `ClobToken`, `ClobOrderBook`, `conditionId`/`tokenIds` on Market).
    The `ToolCallRecord` field name differs: vlad uses `tool` + `durationMs`, agent
    branch uses `name` + no duration. Pick one and update both sides.
 
-5. **Update `src/lib/config.ts`** — adopt vlad's nested config structure, but keep
+5. **Update `src/lib/config.ts`** â€” adopt vlad's nested config structure, but keep
    the Vertex AI fields (`googleCloudProject`, `vertexRegion`) and `useMockData` toggle
    from the agent branch. Vlad's config uses `requireEnv()` for `VALYU_API_KEY` which
-   will throw without it — guard this behind `useMockData` check.
+   will throw without it â€” guard this behind `useMockData` check.
 
-6. **Consider using `fetchTokenPrice()` in the agent** — the current agent uses
+6. **Consider using `fetchTokenPrice()` in the agent** â€” the current agent uses
    `market.probability` (from Gamma, which can be stale). Using CLOB's live price
    would give a more accurate `marketPrice` for EV calculation. This could be a new
    node or an enhancement to `fetchNewsNode`.
@@ -429,17 +429,17 @@ config.evThreshold
 
 > These will become clear once we merge and inspect real API responses together.
 
-- **GammaMarket `outcomePrices`** — vlad confirmed it's a JSON string of string decimals
+- **GammaMarket `outcomePrices`** â€” vlad confirmed it's a JSON string of string decimals
   (e.g. `"[\"0.022\", \"0.978\"]"`), not numbers. The normalization handles this.
-- **Valyu `/deepsearch` vs `/search`** — vlad's branch uses `/deepsearch`, agent branch
+- **Valyu `/deepsearch` vs `/search`** â€” vlad's branch uses `/deepsearch`, agent branch
   uses `/search`. Need to confirm which endpoint is current/correct with the Valyu team.
-- **Order book depth** — unclear how deep the book goes and whether shallow markets
+- **Order book depth** â€” unclear how deep the book goes and whether shallow markets
   should suppress signals (liquidity risk).
 
 ---
 
 ## Removed from MVP
 
-- **Kalshi API** — dropped to reduce surface area (Polymarket only)
-- **`GET /events`** (Gamma) — not needed; `/markets` provides sufficient data
-- **`GET /prices`** (CLOB, plural) — use `/price?token_id=...&side=BUY` instead
+- **Kalshi API** â€” dropped to reduce surface area (Polymarket only)
+- **`GET /events`** (Gamma) â€” not needed; `/markets` provides sufficient data
+- **`GET /prices`** (CLOB, plural) â€” use `/price?token_id=...&side=BUY` instead

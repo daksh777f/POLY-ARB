@@ -583,7 +583,7 @@ export default function LandingPage() {
         >
           <div className="flex items-center justify-between">
             <span className="text-xs text-darwin-text-muted">
-              Polyverse &middot; HackEurope 2026
+              Polyverse &middot; Poly-Arb
             </span>
             <Link
               href="/"

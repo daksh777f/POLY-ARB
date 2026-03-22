@@ -1,16 +1,16 @@
-#!/usr/bin/env npx tsx
+﻿#!/usr/bin/env npx tsx
 /**
- * End-to-end pipeline test — real markets, real news, real LLM.
+ * End-to-end pipeline test â€” real markets, real news, real LLM.
  *
- * Runs the full Darwin Capital pipeline:
- *   Polymarket → Valyu news → LLM probability estimate → divergence → signal
+ * Runs the full POLY-ARB pipeline:
+ *   Polymarket â†’ Valyu news â†’ LLM probability estimate â†’ divergence â†’ signal
  *
  * Usage:
  *   npx tsx scripts/test-pipeline.ts        # default 3 markets
  *   npx tsx scripts/test-pipeline.ts 5      # override market count
  */
 
-// ── Bootstrap env BEFORE any app imports ─────────────────────────────────────
+// â”€â”€ Bootstrap env BEFORE any app imports â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // esbuild (used by tsx) hoists require() calls to the top even in CJS mode,
 // so static `import` statements would cause config.ts to load before .env is
 // parsed. We use dynamic import() inside main() to guarantee correct ordering.
@@ -27,12 +27,12 @@ try {
     const val = trimmed.slice(eq + 1).trim();
     if (key) process.env[key] = val;
   }
-} catch { /* .env not found — rely on process.env */ }
+} catch { /* .env not found â€” rely on process.env */ }
 
 // Force real data
 process.env.USE_MOCK_DATA = 'false';
 
-// ── Types only (erased at compile time, no runtime hoisting) ─────────────────
+// â”€â”€ Types only (erased at compile time, no runtime hoisting) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 import type { Market } from '../src/lib/types';
 
 const DEFAULT_MARKET_COUNT = 3;
@@ -43,9 +43,9 @@ async function runPipeline(
   total: number,
   runEventPod: (m: Market) => Promise<{ signal: import('../src/lib/types').Signal | null; reasoning: string; toolCalls: import('../src/lib/types').ToolCallRecord[] }>,
 ) {
-  console.log(`\n${'═'.repeat(70)}`);
+  console.log(`\n${'â•'.repeat(70)}`);
   console.log(`  MARKET ${index + 1}/${total}: ${market.question}`);
-  console.log(`${'═'.repeat(70)}`);
+  console.log(`${'â•'.repeat(70)}`);
   console.log(`  ID:         ${market.id}`);
   console.log(`  Price:      ${(market.probability * 100).toFixed(1)}%`);
   console.log(`  Volume:     $${market.volume.toLocaleString()}`);
@@ -144,7 +144,7 @@ async function runPipeline(
 }
 
 async function main() {
-  // Dynamic imports — loaded AFTER env is set (avoids esbuild require hoisting)
+  // Dynamic imports â€” loaded AFTER env is set (avoids esbuild require hoisting)
   const { fetchMarkets } = await import('../src/data/polymarket');
   const { runEventPod } = await import('../src/agent/graph');
   const { isOk } = await import('../src/lib/result');
@@ -152,7 +152,7 @@ async function main() {
 
   const marketCount = parseInt(process.argv[2] ?? '', 10) || DEFAULT_MARKET_COUNT;
 
-  console.log('Darwin Capital — End-to-End Pipeline Test');
+  console.log('POLY-ARB â€” End-to-End Pipeline Test');
   console.log('=========================================');
   console.log(`USE_MOCK_DATA:        ${process.env.USE_MOCK_DATA}`);
   console.log(`GOOGLE_CLOUD_PROJECT: ${process.env.GOOGLE_CLOUD_PROJECT}`);
@@ -163,7 +163,7 @@ async function main() {
   console.log('Active Market Filters:');
   console.log(`  Min liquidity:      $${config.marketFilters.minLiquidity}`);
   console.log(`  Min volume:         $${config.marketFilters.minVolume}`);
-  console.log(`  Probability range:  ${config.marketFilters.minProbability} – ${config.marketFilters.maxProbability}`);
+  console.log(`  Probability range:  ${config.marketFilters.minProbability} â€“ ${config.marketFilters.maxProbability}`);
   console.log(`  Enabled strategies: ${config.strategies.enabled.join(', ')}`);
 
   // Step 1: Fetch live markets from Polymarket
@@ -179,7 +179,7 @@ async function main() {
   console.log(`Fetched ${markets.length} markets (sorted by volume).`);
 
   if (markets.length === 0) {
-    console.error('No markets returned — cannot run pipeline.');
+    console.error('No markets returned â€” cannot run pipeline.');
     process.exit(1);
   }
 
@@ -192,8 +192,8 @@ async function main() {
     await runPipeline(selected[i], i, selected.length, runEventPod);
   }
 
-  console.log(`\n${'═'.repeat(70)}`);
-  console.log('DONE — Pipeline test complete.');
+  console.log(`\n${'â•'.repeat(70)}`);
+  console.log('DONE â€” Pipeline test complete.');
 }
 
 main().catch((e) => {
