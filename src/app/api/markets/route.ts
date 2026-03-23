@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import type { MarketsResponse } from "@/lib/types"
 import { getAllMarkets, getMarketCount } from "@/store/markets"
-import { fetchTrendingMarkets } from "@/data/polymarket"
+import { fetchMarkets, fetchTrendingMarkets } from "@/data/polymarket"
 import { apiLimiter } from "@/lib/rate-limit"
 
 export const dynamic = "force-dynamic"
@@ -49,21 +49,51 @@ export async function GET(request: Request) {
       totalPages: result.totalPages,
       lastFetchedAt: new Date().toISOString(),
     }
-    return NextResponse.json(response)
+    return NextResponse.json(response, {
+      headers: {
+        "Cache-Control": "public, s-maxage=15, stale-while-revalidate=45",
+      },
+    })
   }
 
-  // Fallback: fetch from Gamma API directly (pre-sync)
-  const result = await Promise.race([
-    fetchTrendingMarkets({ limit: 50, pages: 2 }),
+  // Stateless runtime path (e.g. Vercel): fetch a lightweight direct market list first.
+  const timeoutMs = process.env.VERCEL ? 7000 : 12000
+
+  const directResult = await Promise.race([
+    fetchMarkets({ limit: Math.min(Math.max(limit, 50), 250), active: true, minLiquidity: 0 }),
     new Promise<{ ok: false; error: string }>((resolve) =>
-      setTimeout(() => resolve({ ok: false, error: "Timed out fetching upstream markets" }), 12000)
+      setTimeout(() => resolve({ ok: false, error: "Timed out fetching upstream markets" }), timeoutMs)
+    ),
+  ])
+
+  if (directResult.ok && directResult.data.length > 0) {
+    const response: MarketsResponse = {
+      markets: directResult.data,
+      total: directResult.data.length,
+      page: 1,
+      pageSize: directResult.data.length,
+      totalPages: 1,
+      lastFetchedAt: new Date().toISOString(),
+    }
+    return NextResponse.json(response, {
+      headers: {
+        "Cache-Control": "public, s-maxage=15, stale-while-revalidate=45",
+      },
+    })
+  }
+
+  // Secondary fallback: event-scored trending markets.
+  const result = await Promise.race([
+    fetchTrendingMarkets({ limit: Math.min(Math.max(limit, 50), 200), pages: 1 }),
+    new Promise<{ ok: false; error: string }>((resolve) =>
+      setTimeout(() => resolve({ ok: false, error: "Timed out fetching upstream trending markets" }), timeoutMs)
     ),
   ])
 
   if (!result.ok) {
     return NextResponse.json(
       {
-        error: result.error,
+        error: directResult.ok ? result.error : `${directResult.error}; ${result.error}`,
         message: "Failed to fetch live markets from Polymarket",
       },
       { status: 503 },
@@ -78,5 +108,9 @@ export async function GET(request: Request) {
     totalPages: 1,
     lastFetchedAt: new Date().toISOString(),
   }
-  return NextResponse.json(response)
+  return NextResponse.json(response, {
+    headers: {
+      "Cache-Control": "public, s-maxage=15, stale-while-revalidate=45",
+    },
+  })
 }

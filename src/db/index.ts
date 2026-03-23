@@ -9,7 +9,11 @@ let _db: BetterSQLite3Database<typeof schema> | null = null;
 
 export function getDb(): BetterSQLite3Database<typeof schema> {
   if (!_db) {
-    const dbPath = path.resolve(process.cwd(), 'darwin.db');
+    const dbPath = process.env.DATABASE_PATH
+      ? path.resolve(process.env.DATABASE_PATH)
+      : process.env.VERCEL
+        ? '/tmp/darwin.db'
+        : path.resolve(process.cwd(), 'darwin.db');
     const sqlite = new Database(dbPath);
 
     // Enable WAL mode for better concurrent read performance

@@ -1,0 +1,13 @@
+{
+  "functions": {
+    "src/app/api/markets/route.ts": {
+      "maxDuration": 60
+    },
+    "src/app/api/health/route.ts": {
+      "maxDuration": 30
+    },
+    "src/app/api/live/route.ts": {
+      "maxDuration": 60
+    }
+  }
+}

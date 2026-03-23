@@ -57,8 +57,11 @@ async function checkExternalAPI(name: string, url: string): Promise<HealthCheckR
 }
 
 export async function GET() {
-  // Ensure orchestrator starts on first health hit (lazy boot pattern).
-  startOrchestrator()
+  // Serverless runtimes (e.g. Vercel) cannot reliably host long-running loops.
+  // Keep local/self-host behavior unchanged.
+  if (!process.env.VERCEL) {
+    startOrchestrator()
+  }
 
   // Run all health checks in parallel
   const [
