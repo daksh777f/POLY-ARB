@@ -11,3 +11,7 @@ export function err<T>(error: string): Result<T> {
 export function isOk<T>(result: Result<T>): result is { ok: true; data: T } {
   return result.ok
 }
+
+export function isErr<T>(result: Result<T>): result is { ok: false; error: string } {
+  return !result.ok
+}

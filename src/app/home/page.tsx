@@ -13,109 +13,6 @@ import { cn } from "@/lib/utils"
 import type { UTCTimestamp } from "lightweight-charts"
 import type { Market, Signal, MarketsResponse, SignalsResponse } from "@/lib/types"
 
-// ─── Mock fallback data (80+ markets across 6 categories) ───────────────────
-
-const MOCK_MARKETS: Market[] = [
-  // POLITICS (15)
-  { id: "p-01", platform: "polymarket", question: "Will the US president win re-election in 2028?", probability: 0.52, volume: 4_800_000, liquidity: 1_200_000, endDate: "2028-11-05", url: "#", category: "Politics", lastUpdated: new Date().toISOString() },
-  { id: "p-02", platform: "polymarket", question: "Will the UK Labour Party win the next general election?", probability: 0.61, volume: 2_100_000, liquidity: 580_000, endDate: "2029-01-01", url: "#", category: "Politics", lastUpdated: new Date().toISOString() },
-  { id: "p-03", platform: "polymarket", question: "Will France hold a snap election in 2026?", probability: 0.38, volume: 890_000, liquidity: 240_000, endDate: "2026-12-31", url: "#", category: "Politics", lastUpdated: new Date().toISOString() },
-  { id: "p-04", platform: "polymarket", question: "Will NATO admit a new member before 2027?", probability: 0.29, volume: 450_000, liquidity: 110_000, endDate: "2027-01-01", url: "#", category: "Politics", lastUpdated: new Date().toISOString() },
-  { id: "p-05", platform: "polymarket", question: "Will the German Bundestag call a no-confidence vote in 2026?", probability: 0.45, volume: 710_000, liquidity: 190_000, endDate: "2026-12-31", url: "#", category: "Politics", lastUpdated: new Date().toISOString() },
-  { id: "p-06", platform: "polymarket", question: "Will any G7 leader resign before mid-2026?", probability: 0.33, volume: 320_000, liquidity: 88_000, endDate: "2026-06-30", url: "#", category: "Politics", lastUpdated: new Date().toISOString() },
-  { id: "p-07", platform: "polymarket", question: "Will there be a presidential referendum in Turkey 2026?", probability: 0.22, volume: 280_000, liquidity: 70_000, endDate: "2026-12-31", url: "#", category: "Politics", lastUpdated: new Date().toISOString() },
-  { id: "p-08", platform: "polymarket", question: "Will US Congress pass immigration reform in 2026?", probability: 0.18, volume: 1_500_000, liquidity: 420_000, endDate: "2026-12-31", url: "#", category: "Politics", lastUpdated: new Date().toISOString() },
-  { id: "p-09", platform: "polymarket", question: "Will Donald Trump face new federal charges before 2027?", probability: 0.41, volume: 3_200_000, liquidity: 980_000, endDate: "2027-01-01", url: "#", category: "Politics", lastUpdated: new Date().toISOString() },
-  { id: "p-10", platform: "polymarket", question: "Will Mexico elect a new president in 2027 general election?", probability: 0.91, volume: 180_000, liquidity: 45_000, endDate: "2027-08-01", url: "#", category: "Politics", lastUpdated: new Date().toISOString() },
-  { id: "p-11", platform: "polymarket", question: "Will Brazil hold midterm elections in 2026?", probability: 0.95, volume: 120_000, liquidity: 30_000, endDate: "2026-10-01", url: "#", category: "Politics", lastUpdated: new Date().toISOString() },
-  { id: "p-12", platform: "polymarket", question: "Will there be a peace ceasefire in major European conflict 2026?", probability: 0.27, volume: 5_600_000, liquidity: 1_800_000, endDate: "2026-12-31", url: "#", category: "Politics", lastUpdated: new Date().toISOString() },
-  { id: "p-13", platform: "polymarket", question: "Will Japan hold snap elections before 2027?", probability: 0.44, volume: 390_000, liquidity: 95_000, endDate: "2026-12-31", url: "#", category: "Politics", lastUpdated: new Date().toISOString() },
-  { id: "p-14", platform: "polymarket", question: "Will India pass the data privacy amendment bill 2026?", probability: 0.56, volume: 230_000, liquidity: 58_000, endDate: "2026-12-31", url: "#", category: "Politics", lastUpdated: new Date().toISOString() },
-  { id: "p-15", platform: "polymarket", question: "Will Canada call a federal election before October 2025?", probability: 0.72, volume: 880_000, liquidity: 210_000, endDate: "2025-10-01", url: "#", category: "Politics", lastUpdated: new Date().toISOString() },
-  // ECONOMICS (15)
-  { id: "e-01", platform: "polymarket", question: "Will the Fed cut rates in Q2 2026?", probability: 0.63, volume: 8_400_000, liquidity: 2_100_000, endDate: "2026-06-30", url: "#", category: "Economics", lastUpdated: new Date().toISOString() },
-  { id: "e-02", platform: "polymarket", question: "Will US CPI drop below 2.5% in 2026?", probability: 0.48, volume: 3_700_000, liquidity: 940_000, endDate: "2026-12-31", url: "#", category: "Economics", lastUpdated: new Date().toISOString() },
-  { id: "e-03", platform: "polymarket", question: "Will Bitcoin hit $150k before end of 2026?", probability: 0.37, volume: 12_000_000, liquidity: 3_400_000, endDate: "2026-12-31", url: "#", category: "Economics", lastUpdated: new Date().toISOString() },
-  { id: "e-04", platform: "polymarket", question: "Will S&P 500 correct more than 15% in 2026?", probability: 0.28, volume: 6_200_000, liquidity: 1_600_000, endDate: "2026-12-31", url: "#", category: "Economics", lastUpdated: new Date().toISOString() },
-  { id: "e-05", platform: "polymarket", question: "Will Ethereum surpass $5000 in 2026?", probability: 0.41, volume: 7_800_000, liquidity: 2_000_000, endDate: "2026-12-31", url: "#", category: "Economics", lastUpdated: new Date().toISOString() },
-  { id: "e-06", platform: "polymarket", question: "Will the ECB raise interest rates in 2026?", probability: 0.19, volume: 2_300_000, liquidity: 590_000, endDate: "2026-12-31", url: "#", category: "Economics", lastUpdated: new Date().toISOString() },
-  { id: "e-07", platform: "polymarket", question: "Will the US enter recession in H1 2026?", probability: 0.22, volume: 9_100_000, liquidity: 2_400_000, endDate: "2026-06-30", url: "#", category: "Economics", lastUpdated: new Date().toISOString() },
-  { id: "e-08", platform: "polymarket", question: "Will gold hit $3500/oz before mid-2026?", probability: 0.56, volume: 4_500_000, liquidity: 1_100_000, endDate: "2026-06-30", url: "#", category: "Economics", lastUpdated: new Date().toISOString() },
-  { id: "e-09", platform: "polymarket", question: "Will the yuan depreciate below 7.5 vs USD in 2026?", probability: 0.34, volume: 1_800_000, liquidity: 450_000, endDate: "2026-12-31", url: "#", category: "Economics", lastUpdated: new Date().toISOString() },
-  { id: "e-10", platform: "polymarket", question: "Will Nvidia market cap exceed $5 trillion in 2026?", probability: 0.44, volume: 5_300_000, liquidity: 1_300_000, endDate: "2026-12-31", url: "#", category: "Economics", lastUpdated: new Date().toISOString() },
-  { id: "e-11", platform: "polymarket", question: "Will a new US tariff on EU goods pass in 2026?", probability: 0.38, volume: 3_100_000, liquidity: 780_000, endDate: "2026-12-31", url: "#", category: "Economics", lastUpdated: new Date().toISOString() },
-  { id: "e-12", platform: "polymarket", question: "Will oil price exceed $90/barrel in 2026?", probability: 0.31, volume: 4_900_000, liquidity: 1_200_000, endDate: "2026-12-31", url: "#", category: "Economics", lastUpdated: new Date().toISOString() },
-  { id: "e-13", platform: "polymarket", question: "Will global trade volume grow more than 3% in 2026?", probability: 0.52, volume: 1_200_000, liquidity: 310_000, endDate: "2026-12-31", url: "#", category: "Economics", lastUpdated: new Date().toISOString() },
-  { id: "e-14", platform: "polymarket", question: "Will a major US bank require federal bailout in 2026?", probability: 0.07, volume: 2_700_000, liquidity: 680_000, endDate: "2026-12-31", url: "#", category: "Economics", lastUpdated: new Date().toISOString() },
-  { id: "e-15", platform: "polymarket", question: "Will the US national debt exceed $38 trillion in 2026?", probability: 0.81, volume: 980_000, liquidity: 240_000, endDate: "2026-12-31", url: "#", category: "Economics", lastUpdated: new Date().toISOString() },
-  // SPORT (15)
-  { id: "s-01", platform: "polymarket", question: "Will Brazil win the 2026 FIFA World Cup?", probability: 0.19, volume: 11_000_000, liquidity: 3_200_000, endDate: "2026-07-19", url: "#", category: "Sports", lastUpdated: new Date().toISOString() },
-  { id: "s-02", platform: "polymarket", question: "Will England win the 2026 FIFA World Cup?", probability: 0.14, volume: 8_900_000, liquidity: 2_400_000, endDate: "2026-07-19", url: "#", category: "Sports", lastUpdated: new Date().toISOString() },
-  { id: "s-03", platform: "polymarket", question: "Will France win the 2026 FIFA World Cup?", probability: 0.17, volume: 7_600_000, liquidity: 2_000_000, endDate: "2026-07-19", url: "#", category: "Sports", lastUpdated: new Date().toISOString() },
-  { id: "s-04", platform: "polymarket", question: "Will Italy qualify for the 2026 FIFA World Cup?", probability: 0.64, volume: 1_240_000, liquidity: 320_000, endDate: "2025-11-18", url: "#", category: "Sports", lastUpdated: new Date().toISOString() },
-  { id: "s-05", platform: "polymarket", question: "Will the Kansas City Chiefs win Super Bowl LXI?", probability: 0.18, volume: 14_000_000, liquidity: 4_000_000, endDate: "2027-02-07", url: "#", category: "Sports", lastUpdated: new Date().toISOString() },
-  { id: "s-06", platform: "polymarket", question: "Will Carlos Alcaraz win Wimbledon 2026?", probability: 0.31, volume: 3_400_000, liquidity: 880_000, endDate: "2026-07-13", url: "#", category: "Sports", lastUpdated: new Date().toISOString() },
-  { id: "s-07", platform: "polymarket", question: "Will Novak Djokovic retire from tennis in 2026?", probability: 0.21, volume: 1_900_000, liquidity: 480_000, endDate: "2026-12-31", url: "#", category: "Sports", lastUpdated: new Date().toISOString() },
-  { id: "s-08", platform: "polymarket", question: "Will Real Madrid win the Champions League 2025/26?", probability: 0.22, volume: 6_800_000, liquidity: 1_800_000, endDate: "2026-05-30", url: "#", category: "Sports", lastUpdated: new Date().toISOString() },
-  { id: "s-09", platform: "polymarket", question: "Will the NBA Eastern Conference finals go to 7 games in 2026?", probability: 0.39, volume: 2_100_000, liquidity: 540_000, endDate: "2026-05-31", url: "#", category: "Sports", lastUpdated: new Date().toISOString() },
-  { id: "s-10", platform: "polymarket", question: "Will Argentina qualify for the 2026 FIFA World Cup?", probability: 0.97, volume: 890_000, liquidity: 220_000, endDate: "2025-11-18", url: "#", category: "Sports", lastUpdated: new Date().toISOString() },
-  { id: "s-11", platform: "polymarket", question: "Will Tiger Woods play in any Major tournament in 2026?", probability: 0.29, volume: 2_800_000, liquidity: 720_000, endDate: "2026-12-31", url: "#", category: "Sports", lastUpdated: new Date().toISOString() },
-  { id: "s-12", platform: "polymarket", question: "Will Germany win UEFA Euro 2028?", probability: 0.16, volume: 4_200_000, liquidity: 1_100_000, endDate: "2028-07-15", url: "#", category: "Sports", lastUpdated: new Date().toISOString() },
-  { id: "s-13", platform: "polymarket", question: "Will the Golden State Warriors make the 2026 NBA playoffs?", probability: 0.48, volume: 3_100_000, liquidity: 790_000, endDate: "2026-04-30", url: "#", category: "Sports", lastUpdated: new Date().toISOString() },
-  { id: "s-14", platform: "polymarket", question: "Will the 2026 World Cup final be held in the USA?", probability: 0.88, volume: 680_000, liquidity: 170_000, endDate: "2026-07-19", url: "#", category: "Sports", lastUpdated: new Date().toISOString() },
-  { id: "s-15", platform: "polymarket", question: "Will Switzerland win the 2026 Davis Cup?", probability: 0.12, volume: 480_000, liquidity: 120_000, endDate: "2026-11-30", url: "#", category: "Sports", lastUpdated: new Date().toISOString() },
-  // TECHNOLOGY (14)
-  { id: "t-01", platform: "polymarket", question: "Will OpenAI release GPT-5 before mid-2026?", probability: 0.67, volume: 9_300_000, liquidity: 2_500_000, endDate: "2026-06-30", url: "#", category: "Technology", lastUpdated: new Date().toISOString() },
-  { id: "t-02", platform: "polymarket", question: "Will Apple launch AI-native iPhone model in 2026?", probability: 0.74, volume: 4_100_000, liquidity: 1_050_000, endDate: "2026-09-30", url: "#", category: "Technology", lastUpdated: new Date().toISOString() },
-  { id: "t-03", platform: "polymarket", question: "Will Google Gemini surpass ChatGPT market share in 2026?", probability: 0.28, volume: 5_700_000, liquidity: 1_450_000, endDate: "2026-12-31", url: "#", category: "Technology", lastUpdated: new Date().toISOString() },
-  { id: "t-04", platform: "polymarket", question: "Will Tesla achieve full self-driving Level 4 approval in 2026?", probability: 0.19, volume: 7_200_000, liquidity: 1_900_000, endDate: "2026-12-31", url: "#", category: "Technology", lastUpdated: new Date().toISOString() },
-  { id: "t-05", platform: "polymarket", question: "Will SpaceX Starship complete an orbit in 2026?", probability: 0.81, volume: 3_600_000, liquidity: 920_000, endDate: "2026-12-31", url: "#", category: "Technology", lastUpdated: new Date().toISOString() },
-  { id: "t-06", platform: "polymarket", question: "Will a quantum computer break RSA-2048 encryption in 2026?", probability: 0.04, volume: 2_800_000, liquidity: 720_000, endDate: "2026-12-31", url: "#", category: "Technology", lastUpdated: new Date().toISOString() },
-  { id: "t-07", platform: "polymarket", question: "Will Meta release a standalone AI model surpassing GPT-4 in 2026?", probability: 0.55, volume: 4_400_000, liquidity: 1_100_000, endDate: "2026-12-31", url: "#", category: "Technology", lastUpdated: new Date().toISOString() },
-  { id: "t-08", platform: "polymarket", question: "Will Apple become a $4 trillion company in 2026?", probability: 0.49, volume: 6_100_000, liquidity: 1_550_000, endDate: "2026-12-31", url: "#", category: "Technology", lastUpdated: new Date().toISOString() },
-  { id: "t-09", platform: "polymarket", question: "Will AI be used in a major geopolitical cyberattack in 2026?", probability: 0.43, volume: 2_200_000, liquidity: 560_000, endDate: "2026-12-31", url: "#", category: "Technology", lastUpdated: new Date().toISOString() },
-  { id: "t-10", platform: "polymarket", question: "Will Anthropic release Claude 4 in 2026?", probability: 0.71, volume: 3_900_000, liquidity: 990_000, endDate: "2026-12-31", url: "#", category: "Technology", lastUpdated: new Date().toISOString() },
-  { id: "t-11", platform: "polymarket", question: "Will Microsoft Copilot be used by 100M+ users in 2026?", probability: 0.62, volume: 2_500_000, liquidity: 630_000, endDate: "2026-12-31", url: "#", category: "Technology", lastUpdated: new Date().toISOString() },
-  { id: "t-12", platform: "polymarket", question: "Will any country ban a major social media platform in 2026?", probability: 0.47, volume: 3_300_000, liquidity: 840_000, endDate: "2026-12-31", url: "#", category: "Technology", lastUpdated: new Date().toISOString() },
-  { id: "t-13", platform: "polymarket", question: "Will a humanoid robot be deployed commercially at scale in 2026?", probability: 0.36, volume: 4_700_000, liquidity: 1_200_000, endDate: "2026-12-31", url: "#", category: "Technology", lastUpdated: new Date().toISOString() },
-  { id: "t-14", platform: "polymarket", question: "Will the EU AI Act enforcement begin before mid-2026?", probability: 0.78, volume: 1_800_000, liquidity: 460_000, endDate: "2026-06-30", url: "#", category: "Technology", lastUpdated: new Date().toISOString() },
-  // SCIENCE (12)
-  { id: "sc-01", platform: "polymarket", question: "Will NASA's Artemis land humans on the Moon in 2026?", probability: 0.24, volume: 5_100_000, liquidity: 1_300_000, endDate: "2026-12-31", url: "#", category: "Science", lastUpdated: new Date().toISOString() },
-  { id: "sc-02", platform: "polymarket", question: "Will a COVID subvariant trigger new travel restrictions in 2026?", probability: 0.16, volume: 3_800_000, liquidity: 960_000, endDate: "2026-12-31", url: "#", category: "Science", lastUpdated: new Date().toISOString() },
-  { id: "sc-03", platform: "polymarket", question: "Will global average temperature breach 1.6C above pre-industrial in 2026?", probability: 0.38, volume: 2_700_000, liquidity: 690_000, endDate: "2026-12-31", url: "#", category: "Science", lastUpdated: new Date().toISOString() },
-  { id: "sc-04", platform: "polymarket", question: "Will nuclear fusion energy produce net gain commercially in 2026?", probability: 0.09, volume: 4_200_000, liquidity: 1_070_000, endDate: "2026-12-31", url: "#", category: "Science", lastUpdated: new Date().toISOString() },
-  { id: "sc-05", platform: "polymarket", question: "Will a new mRNA cancer vaccine receive FDA approval in 2026?", probability: 0.31, volume: 3_500_000, liquidity: 890_000, endDate: "2026-12-31", url: "#", category: "Science", lastUpdated: new Date().toISOString() },
-  { id: "sc-06", platform: "polymarket", question: "Will a Mars mission launch in 2026?", probability: 0.21, volume: 2_100_000, liquidity: 540_000, endDate: "2026-12-31", url: "#", category: "Science", lastUpdated: new Date().toISOString() },
-  { id: "sc-07", platform: "polymarket", question: "Will a new antibiotic class be approved in 2026?", probability: 0.17, volume: 1_400_000, liquidity: 360_000, endDate: "2026-12-31", url: "#", category: "Science", lastUpdated: new Date().toISOString() },
-  { id: "sc-08", platform: "polymarket", question: "Will global renewable energy exceed 50% of generation in 2026?", probability: 0.33, volume: 1_900_000, liquidity: 490_000, endDate: "2026-12-31", url: "#", category: "Science", lastUpdated: new Date().toISOString() },
-  { id: "sc-09", platform: "polymarket", question: "Will CERN detect new physics beyond the Standard Model in 2026?", probability: 0.08, volume: 1_600_000, liquidity: 410_000, endDate: "2026-12-31", url: "#", category: "Science", lastUpdated: new Date().toISOString() },
-  { id: "sc-10", platform: "polymarket", question: "Will bird flu H5N1 transmission become human-to-human in 2026?", probability: 0.14, volume: 6_400_000, liquidity: 1_650_000, endDate: "2026-12-31", url: "#", category: "Science", lastUpdated: new Date().toISOString() },
-  { id: "sc-11", platform: "polymarket", question: "Will a major volcanic eruption affect global air travel in 2026?", probability: 0.12, volume: 2_300_000, liquidity: 590_000, endDate: "2026-12-31", url: "#", category: "Science", lastUpdated: new Date().toISOString() },
-  { id: "sc-12", platform: "polymarket", question: "Will the James Webb Space Telescope confirm exoplanet biosignatures in 2026?", probability: 0.11, volume: 3_100_000, liquidity: 790_000, endDate: "2026-12-31", url: "#", category: "Science", lastUpdated: new Date().toISOString() },
-  // CULTURE (12)
-  { id: "cu-01", platform: "polymarket", question: "Will Beyonce win the Grammy Album of the Year in 2026?", probability: 0.42, volume: 4_700_000, liquidity: 1_200_000, endDate: "2026-02-08", url: "#", category: "Culture", lastUpdated: new Date().toISOString() },
-  { id: "cu-02", platform: "polymarket", question: "Will a Taylor Swift movie gross $1B+ in 2026?", probability: 0.29, volume: 3_200_000, liquidity: 820_000, endDate: "2026-12-31", url: "#", category: "Culture", lastUpdated: new Date().toISOString() },
-  { id: "cu-03", platform: "polymarket", question: "Will Eurovision 2026 be held in the UK?", probability: 0.61, volume: 2_100_000, liquidity: 540_000, endDate: "2026-05-01", url: "#", category: "Culture", lastUpdated: new Date().toISOString() },
-  { id: "cu-04", platform: "polymarket", question: "Will a non-English language film win Best Picture Oscar 2027?", probability: 0.23, volume: 1_800_000, liquidity: 460_000, endDate: "2027-03-01", url: "#", category: "Culture", lastUpdated: new Date().toISOString() },
-  { id: "cu-05", platform: "polymarket", question: "Will the next James Bond be announced before mid-2026?", probability: 0.48, volume: 2_900_000, liquidity: 740_000, endDate: "2026-06-30", url: "#", category: "Culture", lastUpdated: new Date().toISOString() },
-  { id: "cu-06", platform: "polymarket", question: "Will a new Adele album release in 2026?", probability: 0.34, volume: 2_400_000, liquidity: 610_000, endDate: "2026-12-31", url: "#", category: "Culture", lastUpdated: new Date().toISOString() },
-  { id: "cu-07", platform: "polymarket", question: "Will Netflix add 30M+ subscribers in 2026?", probability: 0.53, volume: 3_700_000, liquidity: 940_000, endDate: "2026-12-31", url: "#", category: "Culture", lastUpdated: new Date().toISOString() },
-  { id: "cu-08", platform: "polymarket", question: "Will a video game break $2B revenue in first week in 2026?", probability: 0.27, volume: 2_100_000, liquidity: 540_000, endDate: "2026-12-31", url: "#", category: "Culture", lastUpdated: new Date().toISOString() },
-  { id: "cu-09", platform: "polymarket", question: "Will the Met Gala 2026 theme be AI-related?", probability: 0.19, volume: 1_100_000, liquidity: 280_000, endDate: "2026-05-05", url: "#", category: "Culture", lastUpdated: new Date().toISOString() },
-  { id: "cu-10", platform: "polymarket", question: "Will a major K-pop act break Billboard Hot 100 No.1 in 2026?", probability: 0.44, volume: 2_600_000, liquidity: 660_000, endDate: "2026-12-31", url: "#", category: "Culture", lastUpdated: new Date().toISOString() },
-  { id: "cu-11", platform: "polymarket", question: "Will an AI-generated film be submitted for Oscar consideration 2027?", probability: 0.38, volume: 3_100_000, liquidity: 790_000, endDate: "2026-12-31", url: "#", category: "Culture", lastUpdated: new Date().toISOString() },
-  { id: "cu-12", platform: "polymarket", question: "Will any 2026 music album sell 1M+ physical copies in first week?", probability: 0.22, volume: 1_400_000, liquidity: 360_000, endDate: "2026-12-31", url: "#", category: "Culture", lastUpdated: new Date().toISOString() },
-]
-
-const MOCK_SIGNALS: Signal[] = [
-  { id: "sig-e01", marketId: "e-01", marketQuestion: "Will the Fed cut rates in Q2 2026?", darwinEstimate: 0.71, marketPrice: 0.63, ev: 0.08, direction: "yes", reasoning: "Recent Fed minutes signal growing consensus toward cuts amid softening labor data.", newsEvents: ["Fed minutes released"], confidence: "high", createdAt: new Date(Date.now() - 8 * 60_000).toISOString(), expiresAt: new Date(Date.now() + 86400_000).toISOString() },
-  { id: "sig-e03", marketId: "e-03", marketQuestion: "Will Bitcoin hit $150k before end of 2026?", darwinEstimate: 0.29, marketPrice: 0.37, ev: -0.08, direction: "no", reasoning: "Macro headwinds from dollar strength and ETF outflows suggest market is overpricing rally continuation.", newsEvents: ["ETF outflows surge", "Dollar index rises"], confidence: "medium", createdAt: new Date(Date.now() - 25 * 60_000).toISOString(), expiresAt: new Date(Date.now() + 86400_000).toISOString() },
-  { id: "sig-t01", marketId: "t-01", marketQuestion: "Will OpenAI release GPT-5 before mid-2026?", darwinEstimate: 0.76, marketPrice: 0.67, ev: 0.09, direction: "yes", reasoning: "Leaked roadmap documents and Sam Altman comments suggest accelerated timeline.", newsEvents: ["Altman keynote hints", "Compute cluster expansion"], confidence: "high", createdAt: new Date(Date.now() - 3 * 60_000).toISOString(), expiresAt: new Date(Date.now() + 86400_000).toISOString() },
-  { id: "sig-p12", marketId: "p-12", marketQuestion: "Will there be a peace ceasefire in major European conflict 2026?", darwinEstimate: 0.34, marketPrice: 0.27, ev: 0.07, direction: "yes", reasoning: "Diplomatic back-channels and US pressure point toward ceasefire talks.", newsEvents: ["Secret talks reported", "US envoy travels"], confidence: "low", createdAt: new Date(Date.now() - 45 * 60_000).toISOString(), expiresAt: new Date(Date.now() + 86400_000).toISOString() },
-  { id: "sig-s01", marketId: "s-01", marketQuestion: "Will Brazil win the 2026 FIFA World Cup?", darwinEstimate: 0.14, marketPrice: 0.19, ev: -0.05, direction: "no", reasoning: "Key striker injury and tough draw weaken Brazil's odds more than market reflects.", newsEvents: ["Vinicius injury confirmed", "World Cup draw released"], confidence: "medium", createdAt: new Date(Date.now() - 120 * 60_000).toISOString(), expiresAt: new Date(Date.now() + 86400_000).toISOString() },
-  { id: "sig-sc10", marketId: "sc-10", marketQuestion: "Will bird flu H5N1 transmission become human-to-human in 2026?", darwinEstimate: 0.21, marketPrice: 0.14, ev: 0.07, direction: "yes", reasoning: "New cluster reports in Southeast Asia show atypical transmission patterns.", newsEvents: ["WHO alert issued", "New cluster detected"], confidence: "low", createdAt: new Date(Date.now() - 15 * 60_000).toISOString(), expiresAt: new Date(Date.now() + 86400_000).toISOString() },
-]
-
 // ─── Sub-components ──────────────────────────────────────────────────────────
 
 
@@ -239,8 +136,8 @@ function SignalFeedEntry({ signal }: { signal: Signal }) {
 // ─── Main page ───────────────────────────────────────────────────────────────
 
 export default function LandingPage() {
-  const [markets, setMarkets] = useState<Market[]>(MOCK_MARKETS)
-  const [signals, setSignals] = useState<Signal[]>(MOCK_SIGNALS)
+  const [markets, setMarkets] = useState<Market[]>([])
+  const [signals, setSignals] = useState<Signal[]>([])
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [scrollY, setScrollY] = useState(0)
 
@@ -254,13 +151,18 @@ export default function LandingPage() {
     async function fetchData() {
       try {
         const [mRes, sRes] = await Promise.all([fetch("/api/markets"), fetch("/api/signals")])
-        if (!mRes.ok || !sRes.ok) return
+        if (!mRes.ok || !sRes.ok) {
+          setMarkets([])
+          setSignals([])
+          return
+        }
         const mData = (await mRes.json()) as MarketsResponse
         const sData = (await sRes.json()) as SignalsResponse
-        if (mData.markets?.length) setMarkets(mData.markets)
-        if (sData.signals) setSignals(sData.signals)
+        setMarkets(mData.markets ?? [])
+        setSignals(sData.signals ?? [])
       } catch {
-        // keep mock data
+        setMarkets([])
+        setSignals([])
       }
     }
     void fetchData()

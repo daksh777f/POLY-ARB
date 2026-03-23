@@ -1,8 +1,9 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { X, Newspaper, Brain, Radar, ExternalLink } from "lucide-react"
 import type { StarData } from "@/hooks/use-galaxy-data"
-import type { ScoutEvent } from "@/lib/types"
+import type { AnalyzeResponse, MarketDetailResponse, ScoutEvent, Signal } from "@/lib/types"
 
 function scoutTimeAgo(iso: string): string {
   const diffMs = Date.now() - new Date(iso).getTime()
@@ -20,8 +21,111 @@ interface StarDetailPanelProps {
   scoutEvents?: ScoutEvent[]
 }
 
+function isBaselineFallbackSignal(signal: Signal, marketProbability: number): boolean {
+  const hasFallbackPrefix = signal.reasoning
+    .toLowerCase()
+    .includes("fallback estimate uses deterministic calibration")
+  const sameEstimate = Math.abs(signal.darwinEstimate - marketProbability) < 0.002
+  const zeroEdge = Math.abs(signal.ev) < 0.0001
+  const noNews = signal.newsEvents.length === 0
+  const lowConfidence = signal.confidence === "low"
+  return hasFallbackPrefix || (sameEstimate && zeroEdge && noNews && lowConfidence)
+}
+
 export function StarDetailPanel({ star, onClose, scoutEvents }: StarDetailPanelProps) {
   const { market, signal } = star
+  const [marketSignal, setMarketSignal] = useState<Signal | null>(null)
+  const [analysisState, setAnalysisState] = useState<"idle" | "checking" | "analyzing" | "done">("idle")
+  const [analysisMessage, setAnalysisMessage] = useState<string | null>(null)
+  const hasUsableStarSignal = !!signal && !isBaselineFallbackSignal(signal, market.probability)
+
+  useEffect(() => {
+    setMarketSignal(null)
+    setAnalysisMessage(null)
+    setAnalysisState("idle")
+
+    if (hasUsableStarSignal) {
+      setAnalysisState("done")
+      return
+    }
+
+    const controller = new AbortController()
+
+    async function loadSignalAndAnalyzeIfNeeded() {
+      try {
+        setAnalysisState("checking")
+
+        const res = await fetch(`/api/markets/${market.id}`, { signal: controller.signal })
+        if (!res.ok) {
+          setAnalysisMessage("Unable to load market signal snapshot.")
+          setAnalysisState("done")
+          return
+        }
+
+        const data = (await res.json()) as MarketDetailResponse
+        if (data.signals && data.signals.length > 0) {
+          // Use the highest-absolute-EV signal for consistency with galaxy mapping.
+          const best = data.signals.reduce((bestSoFar, current) =>
+            Math.abs(current.ev) > Math.abs(bestSoFar.ev) ? current : bestSoFar
+          )
+
+          // Baseline fallback signals are non-authoritative and should not block fresh analysis.
+          if (!isBaselineFallbackSignal(best, market.probability)) {
+            setMarketSignal(best)
+            setAnalysisState("done")
+            return
+          }
+        }
+
+        // No stored signal yet: trigger on-demand analysis for this trade.
+        setAnalysisState("analyzing")
+        const analyzeRes = await fetch("/api/analyze", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ marketId: market.id }),
+          signal: controller.signal,
+        })
+
+        if (!analyzeRes.ok) {
+          let details = ""
+          try {
+            const payload = (await analyzeRes.json()) as { error?: string }
+            details = payload.error ? ` ${payload.error}` : ""
+          } catch {
+            // ignore parse failure
+          }
+          setAnalysisMessage(`Analysis request failed.${details}`)
+          setAnalysisState("done")
+          return
+        }
+
+        const analyzeData = (await analyzeRes.json()) as AnalyzeResponse
+
+        if (analyzeData.signal) {
+          setMarketSignal(analyzeData.signal)
+          setAnalysisState("done")
+          return
+        }
+
+        setAnalysisMessage(
+          analyzeData.reasoning || "The agent analyzed this trade but found no tradeable divergence."
+        )
+        setAnalysisState("done")
+      } catch {
+        // Keep quiet: panel can still render market info without a signal.
+        setAnalysisMessage("Analysis unavailable right now.")
+        setAnalysisState("done")
+      }
+    }
+
+    void loadSignalAndAnalyzeIfNeeded()
+
+    return () => {
+      controller.abort()
+    }
+  }, [hasUsableStarSignal, market.id, signal])
+
+  const activeSignal = hasUsableStarSignal ? signal : marketSignal
 
   return (
     <div className="absolute right-4 top-4 bottom-12 w-[380px] z-50 pointer-events-auto">
@@ -77,11 +181,11 @@ export function StarDetailPanel({ star, onClose, scoutEvents }: StarDetailPanelP
               </div>
             </div>
           </div>
-          {signal && (() => {
-            const edgeCents = (signal.darwinEstimate - market.probability) * 100
+          {activeSignal && (() => {
+            const edgeCents = (activeSignal.darwinEstimate - market.probability) * 100
             const confidenceColor =
-              signal.confidence === "high" ? "#00ff88" :
-              signal.confidence === "medium" ? "#ffaa00" :
+              activeSignal.confidence === "high" ? "#00ff88" :
+              activeSignal.confidence === "medium" ? "#ffaa00" :
               "#ff4466"
             return (
               <div className="mt-4 pt-4 border-t border-[#2a2a2a] flex flex-col items-center">
@@ -90,7 +194,7 @@ export function StarDetailPanel({ star, onClose, scoutEvents }: StarDetailPanelP
                 </span>
                 <div className="flex items-center gap-3">
                   <span className="text-2xl font-mono text-[#dddde0]">
-                    {(signal.darwinEstimate * 100).toFixed(1)}%
+                    {(activeSignal.darwinEstimate * 100).toFixed(1)}%
                   </span>
                   <span
                     className={`text-lg font-mono font-bold px-2 py-0.5 rounded ${
@@ -109,7 +213,7 @@ export function StarDetailPanel({ star, onClose, scoutEvents }: StarDetailPanelP
                     backgroundColor: `${confidenceColor}15`,
                   }}
                 >
-                  confidence: {signal.confidence}
+                  confidence: {activeSignal.confidence}
                 </span>
               </div>
             )
@@ -119,7 +223,7 @@ export function StarDetailPanel({ star, onClose, scoutEvents }: StarDetailPanelP
         {/* Scrollable content */}
         <div className="flex-1 overflow-y-auto">
           {/* Reasoning */}
-          {signal?.reasoning && (
+          {activeSignal?.reasoning && (
             <div className="p-4 border-b border-[#333333]">
               <div className="flex items-center gap-1.5 mb-2">
                 <Brain className="h-3.5 w-3.5 text-[#99aabb]" />
@@ -128,25 +232,25 @@ export function StarDetailPanel({ star, onClose, scoutEvents }: StarDetailPanelP
                 </span>
               </div>
               <p className="text-sm text-[#bbc0cc] leading-relaxed">
-                {signal.reasoning}
+                {activeSignal.reasoning}
               </p>
             </div>
           )}
 
           {/* News events */}
-          {signal?.newsEvents && signal.newsEvents.length > 0 && (
+          {activeSignal?.newsEvents && activeSignal.newsEvents.length > 0 && (
             <div className="p-4">
               <div className="flex items-center gap-1.5 mb-2">
                 <Newspaper className="h-3.5 w-3.5 text-[#99aabb]" />
                 <span className="text-xs uppercase tracking-wider text-[#99aabb]">
-                  News Events ({signal.newsEvents.length})
+                  News Events ({activeSignal.newsEvents.length})
                 </span>
                 <span className="text-[9px] text-[#444455] ml-auto">
-                  {scoutTimeAgo(signal.createdAt)}
+                  {scoutTimeAgo(activeSignal.createdAt)}
                 </span>
               </div>
               <ul className="space-y-2">
-                {signal.newsEvents.map((event, i) => {
+                {activeSignal.newsEvents.map((event, i) => {
                   // Try to extract URL from event text (format: "title — source" or contains http)
                   const urlMatch = event.match(/(https?:\/\/[^\s]+)/)
                   const url = urlMatch?.[1]
@@ -210,14 +314,25 @@ export function StarDetailPanel({ star, onClose, scoutEvents }: StarDetailPanelP
           )}
 
           {/* No signal state */}
-          {!signal && (
+          {!activeSignal && (
             <div className="p-4 text-center">
-              <p className="text-xs text-[#99aabb]">
-                No signal detected for this trade yet.
-              </p>
-              <p className="text-xs text-[#778899] mt-1">
-                The agent hasn&apos;t analyzed this trade or found no divergence.
-              </p>
+              {analysisState === "checking" && (
+                <p className="text-xs text-[#99aabb]">Checking for existing signals...</p>
+              )}
+              {analysisState === "analyzing" && (
+                <p className="text-xs text-[#99aabb]">Agent is analyzing this trade now...</p>
+              )}
+              {analysisState === "done" && (
+                <>
+                  <p className="text-xs text-[#99aabb]">No signal detected for this trade yet.</p>
+                  <p className="text-xs text-[#778899] mt-1">
+                    {analysisMessage ?? "The agent hasn&apos;t analyzed this trade or found no divergence."}
+                  </p>
+                </>
+              )}
+              {analysisState === "idle" && (
+                <p className="text-xs text-[#99aabb]">No signal detected for this trade yet.</p>
+              )}
             </div>
           )}
         </div>

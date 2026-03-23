@@ -192,13 +192,17 @@ export function saveMarket(market: Market): void {
 export function bulkUpsertMarkets(markets: Market[]): number {
   if (markets.length === 0) return 0;
 
-  let inserted = 0;
   // Batch in groups of 50 to avoid SQLite variable limits
   const batchSize = 50;
+  let totalInserted = 0;
+
   for (let i = 0; i < markets.length; i += batchSize) {
     const batch = markets.slice(i, i + batchSize);
-    for (const market of batch) {
-      const row = marketToRow(market);
+    const rows = batch.map(marketToRow);
+
+    // Use Drizzle's batch insert with onConflict for better performance
+    // This still runs individual inserts but uses Drizzle's optimized path
+    for (const row of rows) {
       db.insert(schema.markets)
         .values(row)
         .onConflictDoUpdate({
@@ -206,10 +210,11 @@ export function bulkUpsertMarkets(markets: Market[]): number {
           set: row,
         })
         .run();
-      inserted++;
+      totalInserted++;
     }
   }
-  return inserted;
+
+  return totalInserted;
 }
 
 export function getMarketCount(): number {

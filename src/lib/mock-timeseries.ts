@@ -1,5 +1,4 @@
 import type { Market, Signal } from "./types"
-import { MOCK_MARKETS, MOCK_SIGNALS } from "./mock-data"
 
 export interface ProbabilityPoint {
   timestamp: string
@@ -90,17 +89,4 @@ export function buildPanelForMarket(market: Market, signalMap: Map<string, Signa
     signal,
     timeSeries: generateMockTimeSeries(market, signal),
   }
-}
-
-export function getSignalMap(): Map<string, Signal> {
-  const map = new Map<string, Signal>()
-  for (const s of MOCK_SIGNALS) {
-    map.set(s.marketId, s)
-  }
-  return map
-}
-
-export function buildComparePanels(): ComparePanel[] {
-  const signalMap = getSignalMap()
-  return MOCK_MARKETS.slice(0, 4).map((market) => buildPanelForMarket(market, signalMap))
 }

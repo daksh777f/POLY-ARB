@@ -12,7 +12,6 @@ function shouldContinueAfterNews(
   state: EventPodStateType,
 ): 'estimateProbability' | typeof END {
   if (state.error) return END;
-  if (state.newsResults.length === 0) return END;
   return 'estimateProbability';
 }
 
@@ -20,7 +19,6 @@ function shouldContinueAfterDivergence(
   state: EventPodStateType,
 ): 'generateSignal' | typeof END {
   if (!state.divergence) return END;
-  if (!state.divergence.tradeable) return END;
   return 'generateSignal';
 }
 
@@ -62,7 +60,7 @@ export async function runEventPod(market: Market): Promise<{
 
   const reasoning = finalState.probabilityEstimate?.reasoning
     ?? finalState.error
-    ?? 'No analysis produced';
+    ?? `No analysis artifact generated for ${market.id}; toolCalls=${finalState.toolCalls.length}`;
 
   return {
     signal: finalState.signal,

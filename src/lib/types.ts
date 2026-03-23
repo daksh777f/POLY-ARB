@@ -151,13 +151,44 @@ export interface OrchestratorStatus {
 }
 
 export interface HealthResponse {
-  status: "ok" | "error"
+  status: "healthy" | "degraded" | "unhealthy"
   uptime: number
   lastScanAt: string | null
   signalCount: number
   scanner: ScannerStatus
   orchestrator?: OrchestratorStatus
   newsMonitor?: NewsMonitorStatus
+  _debug?: {
+    checks: {
+      database: { name: string; status: 'pass' | 'fail' | 'warn'; latencyMs?: number; message?: string }
+      polymarket: { name: string; status: 'pass' | 'fail' | 'warn'; latencyMs?: number; message?: string }
+    }
+    trading: {
+      totalTrades: number
+      filledTrades: number
+      failedTrades: number
+      totalVolume: number
+    }
+    portfolio: {
+      totalCapital: number
+      availableCapital: number
+      totalPnL: number
+      openPositions: number
+    }
+    config: {
+      tradingEnabled: boolean
+      polymarketConfigured: boolean
+    }
+  }
+}
+
+export interface SignalsResponse {
+  signals: Signal[]
+  total: number
+  page: number
+  pageSize: number
+  totalPages: number
+  lastFetchedAt: string
 }
 
 export interface MarketsResponse {

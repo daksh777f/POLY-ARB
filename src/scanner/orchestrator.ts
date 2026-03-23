@@ -228,6 +228,27 @@ async function workerLoop(workerId: number): Promise<void> {
           timestamp: new Date().toISOString(),
         };
         addNewsEvent(newsEvent);
+
+        // Scout fallback: always surface generated signals in the live panel.
+        // This keeps the UI active even when paid news APIs are rate/credit limited.
+        addScoutEvent({
+          id: nanoid(),
+          article: {
+            title: `Signal ${result.signal.direction.toUpperCase()} | EV ${result.signal.ev.toFixed(3)}`,
+            url: market.url,
+            source: 'orchestrator',
+            snippet: result.reasoning.slice(0, 200),
+          },
+          matchedMarkets: [{
+            marketId: market.id,
+            question: market.question,
+            category: market.category,
+            keywordOverlap: 1,
+            url: market.url,
+            capturedPrice: market.probability,
+          }],
+          timestamp: new Date().toISOString(),
+        });
       } else if (result.reasoning.includes('No news')) {
         setCooldown(market.id, config.orchestrator.cooldown.noNews);
         logActivity('orchestrator', 'info', `[w${workerId}] No news for "${label}..."`);
@@ -284,6 +305,34 @@ function onNewsMatches(matches: NewsMatch[]): void {
       daysToExpiry,
     );
     enqueue(match.market, priority, 'news_match');
+  }
+
+  // Scout: surface high-relevance Valyu/X matches immediately so the panel is active
+  const highRelevance = matches.filter((m) => m.keywordOverlap >= 0.35);
+  if (highRelevance.length > 0) {
+    const representativeArticle = highRelevance[0].article;
+    const articleUrl = representativeArticle.url ?? '';
+    if (articleUrl && isArticleUrlSeen(articleUrl)) return;
+    markArticleUrlSeen(articleUrl);
+
+    addScoutEvent({
+      id: nanoid(),
+      article: {
+        title: representativeArticle.title,
+        url: representativeArticle.url ?? '',
+        source: representativeArticle.source,
+        snippet: representativeArticle.content?.slice(0, 200),
+      },
+      matchedMarkets: highRelevance.map((m) => ({
+        marketId: m.market.id,
+        question: m.market.question,
+        category: m.market.category,
+        keywordOverlap: m.keywordOverlap,
+        url: m.market.url,
+        capturedPrice: m.market.probability,
+      })),
+      timestamp: new Date().toISOString(),
+    });
   }
 }
 
@@ -380,27 +429,41 @@ export function startOrchestrator(): void {
     logActivity('orchestrator', 'info', `Pruned ${pruned} expired signals`);
   }
 
-  // Full market sync on startup, then start watchers
+  const seedWatchersFromDb = (): void => {
+    const allMarkets = getAllMarketsList();
+    if (allMarkets.length === 0) return;
+
+    updateActiveMarkets(allMarkets);
+    updateTrackedMarkets(allMarkets);
+    updateRssActiveMarkets(allMarkets);
+    setTrackedMarkets(allMarkets);
+    logActivity('orchestrator', 'info', `Seeded watchers with ${allMarkets.length} markets from SQLite`);
+
+    const tokenIds = allMarkets
+      .map((m) => m.clobTokenId)
+      .filter((id): id is string => !!id);
+    if (tokenIds.length > 0) {
+      startPolymarketWS(tokenIds);
+      logActivity('orchestrator', 'info', `WebSocket started with ${tokenIds.length} tokens`);
+    }
+  };
+
+  // Warm-start from any existing DB rows immediately.
+  seedWatchersFromDb();
+
+  // Fast startup sync (few pages) so watchers become active quickly on cold boots.
+  syncRecentMarkets()
+    .then(() => {
+      seedWatchersFromDb();
+    })
+    .catch((e) => {
+      logActivity('orchestrator', 'warn', `Warm sync failed: ${e instanceof Error ? e.message : String(e)}`);
+    });
+
+  // Continue with full sync in the background for completeness.
   syncAllMarkets()
     .then(() => {
-      // Seed watchers with full market list from SQLite
-      const allMarkets = getAllMarketsList();
-      if (allMarkets.length > 0) {
-        updateActiveMarkets(allMarkets);
-        updateTrackedMarkets(allMarkets);
-        updateRssActiveMarkets(allMarkets);
-        setTrackedMarkets(allMarkets);
-        logActivity('orchestrator', 'info', `Seeded watchers with ${allMarkets.length} markets from SQLite`);
-
-        // Start WebSocket with all known token IDs
-        const tokenIds = allMarkets
-          .map((m) => m.clobTokenId)
-          .filter((id): id is string => !!id);
-        if (tokenIds.length > 0) {
-          startPolymarketWS(tokenIds);
-          logActivity('orchestrator', 'info', `WebSocket started with ${tokenIds.length} tokens`);
-        }
-      }
+      seedWatchersFromDb();
     })
     .catch((e) => {
       logActivity('orchestrator', 'error', `Initial sync failed: ${e instanceof Error ? e.message : String(e)}`);

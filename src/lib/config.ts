@@ -17,11 +17,14 @@ function envFloat(key: string, fallback: number): number {
 }
 
 export const config = {
-  aiModel: env("AI_MODEL", "anthropic/claude-opus-4-6"),
+  aiModel: env("AI_MODEL", "groq/openai/gpt-oss-20b"),
   anthropicApiKey: env("ANTHROPIC_API_KEY", ""),
+  groqApiKey: env("GROQ_API_KEY", ""),
   valyuApiKey: env("VALYU_API_KEY", ""),
   twitterApiKey: env("TWITTER_API_KEY", ""),
   braintrustApiKey: env("BRAINTRUST_API_KEY", ""),
+  polymarketApiKey: env("POLYMARKET_API_KEY", ""),
+  nodeEnv: env("NODE_ENV", "development"),
   pollIntervalMs: envInt("NEXT_PUBLIC_POLL_INTERVAL_MS", 15_000),
   cycleIntervalMs: envInt("CYCLE_INTERVAL_MS", 60_000),
   evThreshold: envFloat("EV_THRESHOLD", 0.02),
@@ -113,5 +116,13 @@ export const config = {
     enabled: env("SOLANA_ENABLED", "false") === "true",
     rpcUrl: env("SOLANA_RPC_URL", "https://api.devnet.solana.com"),
     keypair: env("SOLANA_KEYPAIR", ""),
+  },
+
+  /** Trading configuration */
+  trading: {
+    mode: env("TRADING_MODE", "simulation") as 'simulation' | 'production',
+    maxSlippage: envFloat("TRADING_MAX_SLIPPAGE", 0.02),
+    minTradeSize: envFloat("TRADING_MIN_SIZE", 1.0),
+    maxTradeSize: envFloat("TRADING_MAX_SIZE", 10000.0),
   },
 }

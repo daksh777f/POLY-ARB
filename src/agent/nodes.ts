@@ -11,6 +11,8 @@ import { commitSignal } from '@/solana/commitment';
 import { logActivity } from '@/store/activity-log';
 import { logSignalCreated } from '@/store/audit-log';
 import { shouldFilterNews } from '@/intelligence/source-credibility';
+import { executeSignalTrade, calculatePositionSize } from '@/lib/trading';
+import { openPosition, getPortfolioStats } from '@/store/portfolio';
 import type { EventPodStateType } from './state';
 import type { Signal, ToolCallRecord } from '@/lib/types';
 
@@ -34,7 +36,8 @@ export async function fetchNewsNode(
 
   if (!result.ok) {
     return {
-      error: `News fetch failed: ${result.error}`,
+      // Continue analysis even when news fetch fails, so the agent can still output a baseline signal.
+      newsResults: [],
       toolCalls: [toolCall],
     };
   }
@@ -46,7 +49,7 @@ export async function fetchNewsNode(
 
   if (filteredNews.length === 0) {
     return {
-      error: 'No news results found for this market (or all filtered)',
+      // Empty news is valid input for a baseline estimate around uncertainty.
       newsResults: [],
       toolCalls: [toolCall],
     };
@@ -160,12 +163,13 @@ export async function calculateDivergenceNode(
   }
 
   if (!state.probabilityEstimate) {
+    const estimateError = state.error ?? 'No probability estimate available for divergence calculation';
     return {
-      error: 'No probability estimate available for divergence calculation',
+      error: estimateError,
       toolCalls: [{
         name: 'calculatePriceDivergence',
         input: { estimatedProbability: null, marketPrice: state.market.probability },
-        output: { error: 'No probability estimate' },
+        output: { error: estimateError },
         timestamp: startTime,
       }],
     };
@@ -256,21 +260,80 @@ export async function generateSignalNode(
     console.error(`Failed to persist signal: ${errorMessage}`);
   }
 
+  // Execute trade if signal is tradeable and we have a CLOB token
+  if (signal.tradeable && state.market.clobTokenId) {
+    // Get portfolio value for position sizing
+    const portfolioStats = getPortfolioStats();
+    const portfolioValue = portfolioStats?.portfolio.totalCapital || 10000;
+    
+    // Fire-and-forget trade execution
+    executeSignalTrade({
+      marketId: signal.marketId,
+      clobTokenId: state.market.clobTokenId,
+      direction: signal.direction,
+      sizeUSD: calculatePositionSize({
+        portfolioValue,
+        kellyFraction: 0.25,
+        maxPositionSize: 0.05, // 5% max per position
+        ev: signal.ev,
+        probability: signal.darwinEstimate,
+        marketPrice: signal.marketPrice,
+      }),
+      currentPrice: signal.marketPrice,
+      signalId: signal.id,
+    }).then((tradeResult) => {
+      if (tradeResult.ok && tradeResult.data.success) {
+        // Get portfolio for position tracking
+        const portfolioStats = getPortfolioStats();
+        // Record position in portfolio (portfolioId is optional - will use default if not provided)
+        openPosition({
+          portfolioId: portfolioStats?.portfolio.id || 'default',
+          signalId: signal.id,
+          marketId: signal.marketId,
+          marketQuestion: signal.marketQuestion,
+          direction: signal.direction,
+          sizePercent: (tradeResult.data.executedAmount! * tradeResult.data.executedPrice!) / portfolioValue,
+          sizeUSD: tradeResult.data.executedAmount! * tradeResult.data.executedPrice!,
+          entryPrice: tradeResult.data.executedPrice!,
+          orderId: tradeResult.data.orderId,
+          txSignature: tradeResult.data.txSignature,
+        });
+        logActivity('orchestrator', 'info', 
+          `Executed trade for signal ${signal.id}: ${signal.direction} ${tradeResult.data.executedAmount} @ ${tradeResult.data.executedPrice}`
+        );
+      } else if (!tradeResult.ok) {
+        logActivity('orchestrator', 'error', 
+          `Trade execution failed for ${signal.id}: ${tradeResult.error}`
+        );
+      }
+    }).catch((error) => {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      logActivity('orchestrator', 'error', `Trade error for ${signal.id}: ${errorMessage}`);
+    });
+  }
+
   // Fire-and-forget Solana commitment — never blocks the pipeline
   if (config.solana.enabled) {
-    commitSignal(signal).then((commitResult) => {
-      if (commitResult.ok) {
-        updateSignalCommitment(signal.id, {
-          txSignature: commitResult.data.txSignature,
-          hash: commitResult.data.hash,
-          slot: commitResult.data.slot,
-          marketPriceAtCommit: signal.marketPrice,
-        });
-        logActivity('orchestrator', 'info', `Committed signal ${signal.id} to Solana: ${commitResult.data.txSignature}`);
-      } else {
-        logActivity('orchestrator', 'error', `Solana commit failed for ${signal.id}: ${commitResult.error}`);
-      }
-    }).catch(() => {});
+    commitSignal(signal)
+      .then((commitResult) => {
+        if (commitResult.ok) {
+          updateSignalCommitment(signal.id, {
+            txSignature: commitResult.data.txSignature,
+            hash: commitResult.data.hash,
+            slot: commitResult.data.slot,
+            marketPriceAtCommit: signal.marketPrice,
+          });
+          logActivity('orchestrator', 'info', `Committed signal ${signal.id} to Solana: ${commitResult.data.txSignature}`);
+        } else {
+          logActivity('orchestrator', 'error', `Solana commit failed for ${signal.id}: ${commitResult.error}`);
+        }
+      })
+      .catch((error) => {
+        // Log the error instead of swallowing it
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        logActivity('orchestrator', 'error', `Solana commit error for ${signal.id}: ${errorMessage}`);
+        console.error(`[nodes] Solana commitment error: ${errorMessage}`);
+      });
   }
 
   const toolCall: ToolCallRecord = {

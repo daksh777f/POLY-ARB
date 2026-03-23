@@ -1,5 +1,5 @@
 import { db, schema } from '@/db';
-import { eq, desc, gte, lt, count, and, isNull, isNotNull } from 'drizzle-orm';
+import { eq, desc, gte, lt, count, and, isNull, isNotNull, sql } from 'drizzle-orm';
 import type { Signal, CostBreakdown } from '@/lib/types';
 
 function rowToSignal(row: typeof schema.signals.$inferSelect): Signal {
@@ -72,21 +72,72 @@ export function saveSignal(signal: Signal): void {
 export function getSignals(filters?: {
   confidence?: 'low' | 'medium' | 'high';
   minEv?: number;
+  limit?: number;
+  offset?: number;
 }): Signal[] {
-  let rows = db
+  // Build WHERE conditions for SQL filtering (much more efficient)
+  const conditions = []
+
+  if (filters?.confidence) {
+    conditions.push(eq(schema.signals.confidence, filters.confidence))
+  }
+
+  if (filters?.minEv !== undefined) {
+    // Use absolute value in SQL
+    conditions.push(
+      sql`(abs(${schema.signals.ev}) >= ${filters.minEv})`
+    )
+  }
+
+  // Apply filters in SQL rather than loading all and filtering in JS
+  let query = db
     .select()
     .from(schema.signals)
     .orderBy(desc(schema.signals.createdAt))
-    .all();
+
+  if (conditions.length > 0) {
+    query = query.where(and(...conditions)) as typeof query
+  }
+
+  if (filters?.limit) {
+    query = query.limit(filters.limit) as typeof query
+  }
+
+  if (filters?.offset) {
+    query = query.offset(filters.offset) as typeof query
+  }
+
+  const rows = query.all()
+  return rows.map(rowToSignal);
+}
+
+/**
+ * Get total count of signals (for pagination)
+ */
+export function getSignalsCount(filters?: {
+  confidence?: 'low' | 'medium' | 'high';
+  minEv?: number;
+}): number {
+  const conditions = []
 
   if (filters?.confidence) {
-    rows = rows.filter((r) => r.confidence === filters.confidence);
-  }
-  if (filters?.minEv !== undefined) {
-    rows = rows.filter((r) => Math.abs(r.ev) >= filters.minEv!);
+    conditions.push(eq(schema.signals.confidence, filters.confidence))
   }
 
-  return rows.map(rowToSignal);
+  if (filters?.minEv !== undefined) {
+    conditions.push(
+      sql`(abs(${schema.signals.ev}) >= ${filters.minEv})`
+    )
+  }
+
+  let query = db.select({ count: sql<number>`count(*)` }).from(schema.signals)
+
+  if (conditions.length > 0) {
+    query = query.where(and(...conditions)) as typeof query
+  }
+
+  const result = query.all()
+  return result[0]?.count || 0
 }
 
 export function getSignalById(id: string): Signal | null {

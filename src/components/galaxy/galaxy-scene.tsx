@@ -65,7 +65,7 @@ function AgentNavBar({
 
   const signalCount = signalsData?.total ?? 0
   const highEv = signalsData?.signals.filter((s) => s.confidence === "high").length ?? 0
-  const isLive = health?.status === "ok"
+  const isLive = health?.status !== "unhealthy"
 
   return (
     <div

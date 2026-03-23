@@ -1,4 +1,4 @@
-import { sqliteTable, text, real, integer } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, text, real, integer, index } from 'drizzle-orm/sqlite-core';
 
 export const signals = sqliteTable('signals', {
   id: text('id').primaryKey(),
@@ -23,6 +23,17 @@ export const signals = sqliteTable('signals', {
   revealTxSignature: text('reveal_tx_signature'),
   commitSlot: integer('commit_slot'),
   marketPriceAtCommit: real('market_price_at_commit'),
+  // Calibration tracking
+  actualOutcome: integer('actual_outcome', { mode: 'boolean' }),
+  calibrationResolvedAt: text('calibration_resolved_at'),
+}, (table) => {
+  return {
+    confidenceIdx: index('idx_signals_confidence').on(table.confidence),
+    evIdx: index('idx_signals_ev').on(table.ev),
+    createdAtIdx: index('idx_signals_created_at').on(table.createdAt),
+    marketIdIdx: index('idx_signals_market_id').on(table.marketId),
+    expiresAtIdx: index('idx_signals_expires_at').on(table.expiresAt),
+  };
 });
 
 export const markets = sqliteTable('markets', {
@@ -43,6 +54,15 @@ export const markets = sqliteTable('markets', {
   tags: text('tags'), // JSON array
   oneDayPriceChange: real('one_day_price_change'),
   syncedAt: text('synced_at'),
+}, (table) => {
+  return {
+    categoryIdx: index('idx_markets_category').on(table.category),
+    endDateIdx: index('idx_markets_end_date').on(table.endDate),
+    liquidityIdx: index('idx_markets_liquidity').on(table.liquidity),
+    volumeIdx: index('idx_markets_volume').on(table.volume),
+    probabilityIdx: index('idx_markets_probability').on(table.probability),
+    clobTokenIdIdx: index('idx_markets_clob_token_id').on(table.clobTokenId),
+  };
 });
 
 export const seenArticles = sqliteTable('seen_articles', {
@@ -124,4 +144,127 @@ export const userCompliance = sqliteTable('user_compliance', {
   geoLocation: text('geo_location'),
   createdAt: text('created_at').notNull(),
   updatedAt: text('updated_at').notNull(),
+});
+
+// ─── PHASE 2: Portfolio & Position Tracking ───────────────────────────────────
+
+/**
+ * Portfolio: Tracks overall capital and performance
+ */
+export const portfolios = sqliteTable('portfolios', {
+  id: text('id').primaryKey(),
+  name: text('name').notNull(),
+  totalCapital: real('total_capital').notNull(), // Total capital in USD
+  availableCapital: real('available_capital').notNull(), // Capital not deployed
+  deployedCapital: real('deployed_capital').default(0), // Capital in positions
+  totalPnL: real('total_pnl').default(0), // Realized + unrealized P&L
+  totalPnLPercent: real('total_pnl_percent').default(0), // As percentage
+  currentDrawdown: real('current_drawdown').default(0), // Current drawdown from peak
+  maxDrawdown: real('max_drawdown').default(0), // Peak-to-trough max
+  winCount: integer('win_count').default(0), // Number of winning trades
+  lossCount: integer('loss_count').default(0), // Number of losing trades
+  createdAt: text('created_at').notNull(),
+  updatedAt: text('updated_at').notNull(),
+});
+
+/**
+ * Positions: Active and closed trades
+ */
+export const positions = sqliteTable('positions', {
+  id: text('id').primaryKey(),
+  portfolioId: text('portfolio_id').notNull(), // FK to portfolios
+  signalId: text('signal_id'), // Optional link to signal that triggered this trade
+  marketId: text('market_id').notNull(),
+  marketQuestion: text('market_question').notNull(),
+  direction: text('direction', { enum: ['yes', 'no'] }).notNull(),
+  sizePercent: real('size_percent').notNull(), // Position size as % of portfolio
+  sizeUSD: real('size_usd').notNull(), // Position size in USD
+  entryPrice: real('entry_price').notNull(), // Price when position opened
+  currentPrice: real('current_price'), // Current market price
+  exitPrice: real('exit_price'), // Price when position closed
+  unrealizedPnL: real('unrealized_pnl'), // P&L if closed now
+  realizedPnL: real('realized_pnl'), // Realized P&L (when closed)
+  status: text('status', { enum: ['open', 'closed', 'settled'] }).notNull(),
+  orderType: text('order_type', { enum: ['market', 'limit', 'fillOrKill'] }).default('market'),
+  orderId: text('order_id'), // Polymarket order ID
+  txSignature: text('tx_signature'), // Transaction signature
+  openedAt: text('opened_at').notNull(),
+  closedAt: text('closed_at'),
+  settledAt: text('settled_at'), // When market resolved
+  createdAt: text('created_at').notNull(),
+  updatedAt: text('updated_at').notNull(),
+});
+
+// ─── Activity & Events (Database-backed) ─────────────────────────────────────
+
+/**
+ * Activity log: database-backed for persistence
+ */
+export const activityLog = sqliteTable('activity_log', {
+  id: text('id').primaryKey(),
+  source: text('source', { enum: ['orchestrator', 'scanner', 'trading', 'system'] }).notNull(),
+  level: text('level', { enum: ['info', 'warn', 'error'] }).notNull(),
+  message: text('message').notNull(),
+  details: text('details'), // JSON string
+  createdAt: text('created_at').notNull(),
+}, (table) => {
+  return {
+    sourceIdx: index('idx_activity_log_source').on(table.source),
+    levelIdx: index('idx_activity_log_level').on(table.level),
+    createdAtIdx: index('idx_activity_log_created_at').on(table.createdAt),
+  };
+});
+
+/**
+ * Scout events: database-backed for persistence
+ */
+export const scoutEvents = sqliteTable('scout_events', {
+  id: text('id').primaryKey(),
+  articleTitle: text('article_title').notNull(),
+  articleUrl: text('article_url'),
+  matchedMarketId: text('matched_market_id'),
+  matchedMarketQuestion: text('matched_market_question'),
+  matchScore: real('match_score'),
+  status: text('status', { enum: ['new', 'dismissed', 'analyzed'] }).default('new'),
+  dismissedAt: text('dismissed_at'),
+  createdAt: text('created_at').notNull(),
+}, (table) => {
+  return {
+    statusIdx: index('idx_scout_events_status').on(table.status),
+    createdAtIdx: index('idx_scout_events_created_at').on(table.createdAt),
+  };
+});
+
+/**
+ * News events: database-backed for persistence
+ */
+export const newsEvents = sqliteTable('news_events', {
+  id: text('id').primaryKey(),
+  title: text('title').notNull(),
+  url: text('url'),
+  source: text('source'),
+  publishedAt: text('published_at'),
+  matchedMarkets: text('matched_markets'), // JSON array
+  createdAt: text('created_at').notNull(),
+});
+
+/**
+ * Trade log: persistent record of all trades
+ */
+export const tradeLog = sqliteTable('trade_log', {
+  id: text('id').primaryKey(),
+  signalId: text('signal_id'),
+  positionId: text('position_id'),
+  marketId: text('market_id').notNull(),
+  direction: text('direction', { enum: ['buy', 'sell'] }).notNull(),
+  amountUSD: real('amount_usd').notNull(),
+  amountTokens: real('amount_tokens'),
+  price: real('price').notNull(),
+  orderType: text('order_type', { enum: ['market', 'limit', 'fillOrKill'] }).notNull(),
+  orderId: text('order_id'),
+  txSignature: text('tx_signature'),
+  status: text('status', { enum: ['pending', 'filled', 'cancelled', 'failed'] }).notNull(),
+  error: text('error'),
+  createdAt: text('created_at').notNull(),
+  filledAt: text('filled_at'),
 });

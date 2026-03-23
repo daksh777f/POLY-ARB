@@ -1,14 +1,33 @@
-import { createVertexAnthropic } from '@ai-sdk/google-vertex/anthropic';
+import { createGroq } from '@ai-sdk/groq';
+import { config } from '@/lib/config';
 
-let _model: ReturnType<ReturnType<typeof createVertexAnthropic>> | null = null;
+let _model: ReturnType<ReturnType<typeof createGroq>> | null = null;
+
+function resolveGroqModelName(): string {
+  const configuredModel = config.aiModel.trim();
+  if (configuredModel.startsWith('groq/')) {
+    return configuredModel.slice('groq/'.length);
+  }
+
+  const envGroqModel = process.env.GROQ_MODEL?.trim();
+  if (envGroqModel) {
+    return envGroqModel;
+  }
+
+  // If AI_MODEL is provided without provider prefix, treat it as a Groq model id.
+  if (configuredModel.length > 0) {
+    return configuredModel;
+  }
+
+  return 'llama-3.3-70b-versatile';
+}
 
 export function getModel() {
   if (!_model) {
-    const vertexAnthropic = createVertexAnthropic({
-      project: process.env.GOOGLE_CLOUD_PROJECT!,
-      location: process.env.VERTEX_REGION || 'us-east5',
+    const groq = createGroq({
+      apiKey: process.env.GROQ_API_KEY,
     });
-    _model = vertexAnthropic('claude-opus-4-5@20251101');
+    _model = groq(resolveGroqModelName());
   }
   return _model;
 }

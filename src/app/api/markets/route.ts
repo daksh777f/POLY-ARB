@@ -2,10 +2,28 @@ import { NextResponse } from "next/server"
 import type { MarketsResponse } from "@/lib/types"
 import { getAllMarkets, getMarketCount } from "@/store/markets"
 import { fetchTrendingMarkets } from "@/data/polymarket"
+import { apiLimiter } from "@/lib/rate-limit"
 
 export const dynamic = "force-dynamic"
 
 export async function GET(request: Request) {
+  // Apply rate limiting - 100 requests per minute (from apiLimiter)
+  const clientIP = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown"
+  const rateLimitResult = apiLimiter.check(`markets:${clientIP}`)
+  
+  if (!rateLimitResult.allowed) {
+    return NextResponse.json(
+      { error: "Rate limit exceeded", retryAfter: rateLimitResult.resetAt },
+      { 
+        status: 429, 
+        headers: { 
+          "Retry-After": String(Math.ceil((rateLimitResult.resetAt - Date.now()) / 1000)),
+          "X-RateLimit-Remaining": "0",
+          "X-RateLimit-Reset": String(rateLimitResult.resetAt),
+        } 
+      }
+    )
+  }
   const { searchParams } = new URL(request.url)
 
   const page = parseInt(searchParams.get("page") ?? "1", 10) || 1

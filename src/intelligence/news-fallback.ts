@@ -75,8 +75,47 @@ function recordSuccess(source: 'valyu' | 'twitter'): void {
   }
 }
 
+// Retry configuration
+const RETRY_CONFIG = {
+  maxAttempts: 3,
+  baseDelayMs: 1000,
+  maxDelayMs: 5000,
+};
+
 /**
- * Search for news with fallback chain
+ * Retry a function with exponential backoff
+ */
+async function withRetry<T>(
+  fn: () => Promise<Result<T>>,
+  sourceName: string,
+): Promise<Result<T>> {
+  let lastError = 'Unknown error';
+
+  for (let attempt = 1; attempt <= RETRY_CONFIG.maxAttempts; attempt++) {
+    const result = await fn();
+
+    if (result.ok) {
+      return result;
+    }
+
+    lastError = result.error;
+
+    // Don't retry on final attempt
+    if (attempt < RETRY_CONFIG.maxAttempts) {
+      const delay = Math.min(
+        RETRY_CONFIG.baseDelayMs * Math.pow(2, attempt - 1),
+        RETRY_CONFIG.maxDelayMs,
+      );
+      console.warn(`[news-fallback] ${sourceName} attempt ${attempt} failed, retrying in ${delay}ms...`);
+      await new Promise((resolve) => setTimeout(resolve, delay));
+    }
+  }
+
+  return err(`${sourceName} failed after ${RETRY_CONFIG.maxAttempts} attempts: ${lastError}`);
+}
+
+/**
+ * Search for news with fallback chain and retry logic
  * Priority: Valyu (if available) → Twitter → Fallback (empty)
  */
 export async function searchNewsMultiSource(
@@ -85,9 +124,12 @@ export async function searchNewsMultiSource(
 ): Promise<Result<NewsResult[]>> {
   const results: NewsResult[] = [];
 
-  // 1. Try Valyu (primary, most relevant)
+  // 1. Try Valyu (primary, most relevant) with retry
   if (isSourceAvailable('valyu')) {
-    const valyuResult = await searchValyu(query, maxResults);
+    const valyuResult = await withRetry(
+      () => searchValyu(query, maxResults),
+      'Valyu',
+    );
 
     if (valyuResult.ok) {
       recordSuccess('valyu');
@@ -103,9 +145,12 @@ export async function searchNewsMultiSource(
     console.warn(`[news-fallback] Valyu circuit breaker OPEN`);
   }
 
-  // 2. Try Twitter (real-time, noisy but available)
+  // 2. Try Twitter (real-time, noisy but available) with retry
   if (isSourceAvailable('twitter') && results.length < maxResults) {
-    const twitterResult = await searchTwitter(query, maxResults - results.length);
+    const twitterResult = await withRetry(
+      () => searchTwitter(query, maxResults - results.length),
+      'Twitter',
+    );
 
     if (twitterResult.ok) {
       recordSuccess('twitter');

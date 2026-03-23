@@ -1,6 +1,8 @@
 import type { Market, Result } from "@/lib/types"
 import { ok, err } from "@/lib/result"
 import { config } from "@/lib/config"
+import { marketCache, orderBookCache, cachedFetch, makeCacheKey } from "@/lib/cache"
+import { polymarketBreaker, withCircuitBreaker } from "@/lib/circuit-breaker"
 
 const GAMMA_BASE = "https://gamma-api.polymarket.com"
 const CLOB_BASE = "https://clob.polymarket.com"
@@ -84,6 +86,11 @@ async function fetchWithRetry(
   url: string,
   maxAttempts = 4
 ): Promise<Result<Response>> {
+  // Check circuit breaker first
+  if (polymarketBreaker.getState() === 'open') {
+    return err('Circuit breaker open - Polymarket API temporarily unavailable');
+  }
+
   const delays = [0, 1000, 3000, 5000]
   const REQUEST_TIMEOUT_MS = 15000
 
@@ -277,13 +284,26 @@ export async function fetchTrendingMarkets(options?: {
 }
 
 export async function fetchMarketById(id: string): Promise<Result<Market>> {
+  const cacheKey = makeCacheKey(`market:${id}`)
+  
+  // Check cache first
+  const cached = marketCache.get(cacheKey)
+  if (cached) {
+    return ok(cached as Market)
+  }
+  
   const result = await fetchWithRetry(`${GAMMA_BASE}/markets/${id}`)
   if (!result.ok) return err(result.error)
 
   try {
     const data = (await result.data.json()) as GammaMarket
     if (!data.question) return err("Market not found or invalid")
-    return ok(gammaToMarket(data))
+    const market = gammaToMarket(data)
+    
+    // Cache the result
+    marketCache.set(cacheKey, market)
+    
+    return ok(market)
   } catch (e) {
     return err(`Failed to parse market: ${e instanceof Error ? e.message : String(e)}`)
   }
@@ -302,6 +322,14 @@ export interface OrderBook {
 export async function fetchOrderBook(
   clobTokenId: string
 ): Promise<Result<OrderBook>> {
+  const cacheKey = makeCacheKey(`orderbook:${clobTokenId}`)
+  
+  // Check cache first
+  const cached = orderBookCache.get(cacheKey)
+  if (cached) {
+    return ok(cached as OrderBook)
+  }
+  
   const params = new URLSearchParams({ token_id: clobTokenId })
   const result = await fetchWithRetry(`${CLOB_BASE}/book?${params}`)
   if (!result.ok) return err(result.error)
@@ -319,7 +347,12 @@ export async function fetchOrderBook(
       price: parseFloat(a.price),
       size: parseFloat(a.size),
     }))
-    return ok({ bids, asks })
+    const orderBook = { bids, asks }
+    
+    // Cache the result
+    orderBookCache.set(cacheKey, orderBook)
+    
+    return ok(orderBook)
   } catch (e) {
     return err(`Failed to parse order book: ${e instanceof Error ? e.message : String(e)}`)
   }
