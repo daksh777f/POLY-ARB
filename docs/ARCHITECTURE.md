@@ -1,4 +1,4 @@
-﻿# POLY-ARB â€” Architecture
+# POLY-ARB — Architecture
 
 > Simplified for . Unified Next.js app, single strategy, Polymarket only.
 
@@ -7,42 +7,42 @@
 ## System Overview
 
 ```
-â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-â”‚                    NEXT.JS APP (unified)                         â”‚
-â”‚                                                                  â”‚
-â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â” â”‚
-â”‚  â”‚        FRONTEND             â”‚  â”‚      API ROUTES           â”‚ â”‚
-â”‚  â”‚                             â”‚  â”‚                           â”‚ â”‚
-â”‚  â”‚  Market Grid (page.tsx)     â”‚  â”‚  GET /api/health          â”‚ â”‚
-â”‚  â”‚  Market Detail ([id])       â”‚  â”‚  GET /api/markets         â”‚ â”‚
-â”‚  â”‚  React Query (polling)      â”‚  â”‚  GET /api/markets/[id]    â”‚ â”‚
-â”‚  â”‚  Tailwind dark theme        â”‚  â”‚  GET /api/signals         â”‚ â”‚
-â”‚  â”‚                             â”‚  â”‚  POST /api/analyze        â”‚ â”‚
-â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜ â”‚
-â”‚             â”‚ fetch + poll                    â”‚                  â”‚
-â”‚             â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜                  â”‚
-â”‚                           â–¼                                      â”‚
-â”‚              â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”                          â”‚
-â”‚              â”‚   SQLITE + DRIZZLE    â”‚                          â”‚
-â”‚              â”‚   darwin.db           â”‚                          â”‚
-â”‚              â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜                          â”‚
-â”‚                          â–¼                                       â”‚
-â”‚              â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”                          â”‚
-â”‚              â”‚   EVENT POD AGENT      â”‚                          â”‚
-â”‚              â”‚   (LangGraph StateGraph)â”‚                          â”‚
-â”‚              â”‚                        â”‚                          â”‚
-â”‚              â”‚   fetchNews â†’ estimate â”‚                          â”‚
-â”‚              â”‚   â†’ divergence â†’ signalâ”‚                          â”‚
-â”‚              â””â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”˜                          â”‚
-â”‚                 â”‚                  â”‚                              â”‚
-â”‚                 â–¼                  â–¼                              â”‚
-â”‚  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”                     â”‚
-â”‚  â”‚   Polymarket     â”‚  â”‚   Valyu          â”‚                     â”‚
-â”‚  â”‚   Gamma + CLOB   â”‚  â”‚   Research API   â”‚                     â”‚
-â”‚  â”‚   (market data)  â”‚  â”‚   (news context) â”‚                     â”‚
-â”‚  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜                     â”‚
-â”‚         EXTERNAL              EXTERNAL                           â”‚
-â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+┌──────────────────────────────────────────────────────────────────┐
+│                    NEXT.JS APP (unified)                         │
+│                                                                  │
+│  ┌─────────────────────────────┐  ┌───────────────────────────┐ │
+│  │        FRONTEND             │  │      API ROUTES           │ │
+│  │                             │  │                           │ │
+│  │  Market Grid (page.tsx)     │  │  GET /api/health          │ │
+│  │  Market Detail ([id])       │  │  GET /api/markets         │ │
+│  │  React Query (polling)      │  │  GET /api/markets/[id]    │ │
+│  │  Tailwind dark theme        │  │  GET /api/signals         │ │
+│  │                             │  │  POST /api/analyze        │ │
+│  └──────────┬──────────────────┘  └──────────┬────────────────┘ │
+│             │ fetch + poll                    │                  │
+│             └─────────────┬───────────────────┘                  │
+│                           ▼                                      │
+│              ┌────────────────────────┐                          │
+│              │   SQLITE + DRIZZLE    │                          │
+│              │   darwin.db           │                          │
+│              └───────────┬────────────┘                          │
+│                          ▼                                       │
+│              ┌────────────────────────┐                          │
+│              │   EVENT POD AGENT      │                          │
+│              │   (LangGraph StateGraph)│                          │
+│              │                        │                          │
+│              │   fetchNews → estimate │                          │
+│              │   → divergence → signal│                          │
+│              └──┬──────────────────┬──┘                          │
+│                 │                  │                              │
+│                 ▼                  ▼                              │
+│  ┌──────────────────┐  ┌──────────────────┐                     │
+│  │   Polymarket     │  │   Valyu          │                     │
+│  │   Gamma + CLOB   │  │   Research API   │                     │
+│  │   (market data)  │  │   (news context) │                     │
+│  └──────────────────┘  └──────────────────┘                     │
+│         EXTERNAL              EXTERNAL                           │
+└──────────────────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -52,13 +52,13 @@
 Runs on interval (`CYCLE_INTERVAL_MS`, default 5 min):
 
 ```
-1. FETCH    â†’ Polymarket Gamma API â†’ normalized Market[]
-2. FILTER   â†’ politics category, min liquidity, ending-soon priority
-3. ANALYZE  â†’ Event Pod agent runs tool-use loop on each market batch:
-               fetchRecentNews â†’ estimateEventProbability â†’
-               calculatePriceDivergence â†’ propose trade if |EV| > threshold
-4. STORE    â†’ Signal objects persisted to SQLite via Drizzle ORM
-5. SERVE    â†’ API routes read from SQLite â†’ React Query polls â†’ UI updates
+1. FETCH    → Polymarket Gamma API → normalized Market[]
+2. FILTER   → politics category, min liquidity, ending-soon priority
+3. ANALYZE  → Event Pod agent runs tool-use loop on each market batch:
+               fetchRecentNews → estimateEventProbability →
+               calculatePriceDivergence → propose trade if |EV| > threshold
+4. STORE    → Signal objects persisted to SQLite via Drizzle ORM
+5. SERVE    → API routes read from SQLite → React Query polls → UI updates
 ```
 
 ## Data Flow: On-Demand Analysis
@@ -77,7 +77,7 @@ User clicks "Analyze" on a market detail page:
 
 ## Core Types
 
-### `Market` â€” normalized market data (`src/lib/types.ts`)
+### `Market` — normalized market data (`src/lib/types.ts`)
 
 ```typescript
 interface Market {
@@ -94,7 +94,7 @@ interface Market {
 }
 ```
 
-### `Signal` â€” agent output persisted to SQLite (`src/lib/types.ts`)
+### `Signal` — agent output persisted to SQLite (`src/lib/types.ts`)
 
 ```typescript
 interface Signal {
@@ -113,7 +113,7 @@ interface Signal {
 }
 ```
 
-### `AgentOutput` â€” what the agent returns (`src/lib/types.ts`)
+### `AgentOutput` — what the agent returns (`src/lib/types.ts`)
 
 ```typescript
 interface AgentOutput {
@@ -123,7 +123,7 @@ interface AgentOutput {
 }
 ```
 
-### `TradeProposal` â€” individual trade signal (`src/lib/types.ts`)
+### `TradeProposal` — individual trade signal (`src/lib/types.ts`)
 
 ```typescript
 interface TradeProposal {
@@ -150,8 +150,8 @@ EV = estimatedProbability - marketPrice
 
 A trade is proposed when `|EV| > EV_THRESHOLD` (default 0.05).
 
-- Positive EV â†’ buy YES (market underpriced)
-- Negative EV â†’ buy NO (market overpriced)
+- Positive EV → buy YES (market underpriced)
+- Negative EV → buy NO (market overpriced)
 
 ---
 
@@ -159,10 +159,10 @@ A trade is proposed when `|EV| > EV_THRESHOLD` (default 0.05).
 
 Explicitly excluded to keep scope tight:
 
-- No Kalshi â€” Polymarket only
-- No arbitrage pod â€” single strategy
-- No time-series pod â€” single strategy
-- No risk manager â€” no position sizing, drawdown, concentration checks
-- No virtual trading engine â€” signals only, no paper trading
-- No WebSocket â€” polling via React Query
-- No authentication â€” public dashboard
+- No Kalshi — Polymarket only
+- No arbitrage pod — single strategy
+- No time-series pod — single strategy
+- No risk manager — no position sizing, drawdown, concentration checks
+- No virtual trading engine — signals only, no paper trading
+- No WebSocket — polling via React Query
+- No authentication — public dashboard
