@@ -47,3 +47,23 @@ darwin.db-wal
 
 # solana local validator
 test-ledger/
+
+# Secrets
+.env
+.env.*
+!.env.example
+*.key
+
+# OS / editor
+Thumbs.db
+.idea/
+
+# Logs
+*.log
+
+# Node
+node_modules/
+dist/
+build/
+.next/
+out/
