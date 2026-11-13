@@ -1,8 +1,8 @@
 {
   "type": "service_account",
   "project_id": "eminent-nation-468114-k6",
-  "private_key_id": "REDACTED",
-  "private_key": "REDACTED",
+  "private_key_id": "REDACTED - create a new service-account key in Google Cloud and keep it out of git",
+  "private_key": "REDACTED - create a new service-account key in Google Cloud and keep it out of git",
   "client_email": "polyarb@eminent-nation-468114-k6.iam.gserviceaccount.com",
   "client_id": "111889601532103184602",
   "auth_uri": "https://accounts.google.com/o/oauth2/auth",
